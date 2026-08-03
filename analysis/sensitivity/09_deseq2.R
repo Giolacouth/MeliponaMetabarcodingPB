@@ -27,24 +27,6 @@ run_pipeline_script("09_deseq2.R", "deseq2", function(ctx) {
 ###############################################################################
 # SCRIPT 09 — DESEQ2: ABUNDÂNCIA DIFERENCIAL
 #
-# Análise pairwise de abundância diferencial entre espécies de Melipona.
-# Exige contagens BRUTAS (não rarefadas, não transformadas).
-# Executa core9 como referencia principal e plus10 como sensibilidade exploratoria
-# separada. No plus10, Run nao pode ser ajustada porque a segunda corrida tem n=1.
-#
-# Comparações (3 pares):
-#   M. scutellaris  vs  M. fasciculata  (referência)
-#   M. subnitida    vs  M. fasciculata  (referência)
-#   M. subnitida    vs  M. scutellaris
-#
-# Shrinkage de log2FC: tipo 'ashr' (requer pacote ashr);
-#   fallback automático para 'normal' se ashr não estiver instalado.
-#
-# Dependências (geradas pelo Script 06):
-#   output_V1/phyloseq_core9_primeira_run.rds
-#
-# Saídas:
-#   output_V1/deseq2/
 ###############################################################################
 
 options(encoding = "UTF-8", stringsAsFactors = FALSE)
@@ -59,7 +41,7 @@ suppressPackageStartupMessages({
 # 0. PARÂMETROS GLOBAIS
 ###############################################################################
 
-VERSAO        <- "2.1_core9_plus10_universo_asvs"
+VERSAO        <- 
 DATA_EXECUCAO <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
 
 base_path <- ctx$base_path
@@ -74,8 +56,8 @@ for (d in c(deseq_path, diag_path)) {
 ALPHA <- 0.05
 LFC_THRESHOLD <- 1.0
 PREV_MIN <- 2L
-arq_core9 <- ctx$contracts[["phyloseq_core9"]]
-arq_plus10 <- ctx$contracts[["phyloseq_plus10"]]
+arq_core9 <- ctx$contracts[[]]
+arq_plus10 <- ctx$contracts[[]]
 
 ###############################################################################
 # 1. FUNÇÕES AUXILIARES
@@ -84,13 +66,7 @@ arq_plus10 <- ctx$contracts[["phyloseq_plus10"]]
 log_msg <- function(msg, tipo = "INFO")
   cat(sprintf("[%s] <%s> %s\n", format(Sys.time(), "%H:%M:%S"), tipo, msg))
 
-# Tenta lfcShrink com ashr; cai para normal se ashr indisponível.
-# com type = "ashr", o objeto res= ja codifica o contraste.
-# Passar 'contrast' E 'res' simultaneamente para ashr gera erro
-# ("provide contrast or coef, not both") em versoes recentes do DESeq2.
-# A forma correta passa SOMENTE res= para ashr; o fallback 'normal'
-# usa contrast= e res= juntos (permitido para type='normal').
-shrink_lfc <- function(dds_obj, contraste, res_raw) {
+
   tryCatch(
     {
       out <- lfcShrink(dds_obj, res = res_raw, type = "ashr")
@@ -107,16 +83,14 @@ shrink_lfc <- function(dds_obj, contraste, res_raw) {
   )
 }
 
-# Extrai filterThreshold protegido contra NULL.
-# metadata(res)$filterThreshold e NULL quando o filtro independente nao
-# remove nenhuma ASV; round(NULL, 2) gera erro e interrompe o loop.
+
+
 filter_threshold_seguro <- function(res_obj) {
   ft <- metadata(res_obj)$filterThreshold
   if (is.null(ft) || length(ft) == 0) return(NA_real_)
   round(as.numeric(ft), 2)
 }
 
-# Adiciona taxonomia sem reordenar as linhas dos resultados.
 anotar_taxonomia <- function(df, taxa_tbl) {
   ranks <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
   if (is.null(rownames(df)) || any(rownames(df) == "")) {
@@ -236,32 +210,22 @@ if (!identical(rownames(meta_d), colnames(count_mat))) {
 # Nível de referência = Melipona fasciculata.
 meta_d$BeeSpecies <- factor(
   meta_d$BeeSpecies,
-  levels = c("Melipona fasciculata",
-             "Melipona scutellaris",
-             "Melipona subnitida")
+  levels = c()
 )
 if (any(is.na(meta_d$BeeSpecies)))
   stop("BeeSpecies contem níveis inesperados no DESeq2.")
-meta_d$Nativo_Introduzido <- factor(ifelse(as.character(meta_d$BeeSpecies) == "Melipona fasciculata",
-                                           "Introduzida", "Nativa"),
-                                    levels = c("Introduzida", "Nativa"))
+meta_d$Nativo_Introduzido <- factor(ifelse(as.character(meta_d$BeeSpecies) == ),
+                                    levels = c())
 
 cat("\nDistribuição por BeeSpecies:\n")
 print(table(meta_d$BeeSpecies))
 cat("Nível de referência (denominador):", levels(meta_d$BeeSpecies)[1], "\n\n")
 
 # AVISO ESTATÍSTICO — réplicas por grupo:
-# O DESeq2 estima a dispersão por ASV dentro de cada grupo. Os autores
-# recomendam >= 3 réplicas biológicas por grupo. No core9, fasciculata tem
-# n = 2. Toda comparação que envolve fasciculata (scutellaris_vs_fasciculata
-# e subnitida_vs_fasciculata) apoia a estimativa de variância em 1 grau de
-# liberdade nesse grupo: o teste roda, mas a dispersão é instável e o poder
-# é baixo. Tratar esses resultados como exploratórios.
+
 n_por_grupo <- table(meta_d$BeeSpecies)
 esperado_grupos <- c(
-  "Melipona fasciculata" = 2L,
-  "Melipona scutellaris" = 3L,
-  "Melipona subnitida" = 4L
+ 
 )
 if (!identical(as.integer(n_por_grupo[names(esperado_grupos)]), as.integer(esperado_grupos))) {
   stop(
@@ -533,15 +497,11 @@ for (i in seq_along(comparacoes)) {
 }
 
 ###############################################################################
-# 8B. CONTRASTE DESCRITIVO NATIVA/INTRODUZIDA
-# ATENCAO: o status de origem e determinado pela especie (M. fasciculata e a
-# unica introduzida). Portanto, este contraste nao separa efeito de origem,
-# efeito de especie, localidade ou ambiente. Tratar apenas como comparacao
-# composta exploratoria, sem interpretacao causal.
+# 8B. CONTRASTE DESCRITIVO
 ###############################################################################
-cat("\n=== MODELO DESeq2 (design: ~ Nativo_Introduzido) ===\n\n")
+cat("\n=== MODELO DESeq2 ===\n\n")
 
-status_path <- file.path(deseq_path, "nativo_introduzido_prev2")
+status_path <- file.path(deseq_path, "")
 dir.create(status_path, recursive = TRUE, showWarnings = FALSE)
 
 dds_status <- DESeqDataSetFromMatrix(
@@ -582,16 +542,16 @@ res_status_sig <- res_status_sig[order(res_status_sig$padj), ]
 
 salvar_csv(
   res_status_ann,
-  file.path(status_path, "core9_completo_nativa_vs_introduzida.csv")
+  file.path(status_path, "")
 )
 salvar_csv(
   res_status_sig,
-  file.path(status_path, "core9_sig_nativa_vs_introduzida.csv")
+  file.path(status_path, "c")
 )
 
 resumo_status <- data.frame(
-  Comparacao = "nativa_vs_introduzida",
-  Design = "~ Nativo_Introduzido (contraste composto confundido com BeeSpecies)",
+  Comparacao = "a",
+  Design = 
   PREV_MIN = PREV_MIN,
   N_introduzida = sum(meta_d$Nativo_Introduzido == "Introduzida"),
   N_nativa = sum(meta_d$Nativo_Introduzido == "Nativa"),
@@ -610,13 +570,7 @@ log_msg("DESeq2 nativo/introduzido salvo em deseq2/nativo_introduzido_prev2", "S
 
 ###############################################################################
 # 8C. SENSIBILIDADE EXPLORATORIA PLUS10 — DESEQ2
-#
-# O modelo e ajustado separadamente com design ~ BeeSpecies. Nao se inclui Run
-# porque run_aux possui uma unica amostra e esta pertence a M. fasciculata;
-# ~ Run + BeeSpecies nao permite estimar de forma confiavel o efeito tecnico.
-# Os resultados plus10 servem apenas para verificar estabilidade de direcao,
-# magnitude e significancia em relacao ao core9.
-###############################################################################
+################################################################################
 cat("\n=== PLUS10 — DESeq2 EXPLORATORIO SEPARADO ===\n\n")
 log_msg(
   paste0(
