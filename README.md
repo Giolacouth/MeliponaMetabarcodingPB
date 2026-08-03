@@ -1,19 +1,9 @@
 # Pipeline 16S de mel de abelhas sem ferrão
 
-Este repositório reúne os scripts usados no processamento de amplicons 16S rRNA V3–V4, na classificação taxonômica, na construção de objetos `phyloseq` e na produção de análises e figuras. A versão pública foi limpa para remover caminhos locais, identificadores originais de corridas, nomes particulares de amostras, resultados escritos diretamente no código e blocos de desenvolvimento que não participavam da execução.
+Este repositório reúne os scripts usados no processamento de amplicons 16S rRNA V3–V4, na classificação taxonômica, na construção de objetos `phyloseq` e na produção de análises e figuras. 
 
-Os comentários metodológicos e os parâmetros necessários à reprodução foram mantidos. A remoção de comentários não alterou intencionalmente os cálculos dos scripts de origem.
+Os comentários metodológicos e os parâmetros necessários à reprodução foram mantidos. 
 
-## Estado do conjunto
-
-Os arquivos anexados não continham todos os módulos citados pelo pipeline. Portanto, esta versão é adequada para revisão e organização no GitHub, mas a execução integral depende da inclusão dos seguintes arquivos definitivos:
-
-- `scripts/02d_BEExact.R`;
-- `scripts/06b_inext.R`;
-- `scripts/08_analises_ecologicas.R`;
-- `scripts/09_ancombc2.R`, correspondente ao método de abundância diferencial adotado no artigo.
-
-O arquivo `analysis/sensitivity/09_deseq2.R` foi preservado somente como análise de sensibilidade. Ele não integra o fluxo principal quando ANCOM-BC2/ANCOM é o método declarado no artigo.
 
 ## Estrutura
 
@@ -43,17 +33,6 @@ O arquivo `analysis/sensitivity/09_deseq2.R` foi preservado somente como anális
 | `10_graficos.R` | Lê resultados oficiais das etapas anteriores e gera as figuras; não usa resultados numéricos fixos nas legendas. |
 | `11a_faprotax_graficos.R` | Realiza a inferência funcional por FAPROTAX com `microeco` e produz tabelas e figuras. |
 
-## Identificadores públicos
-
-Para evitar nomes particulares, a versão pública usa:
-
-| Campo | Código público |
-|---|---|
-| Corrida principal | `run_main` |
-| Corrida auxiliar | `run_aux` |
-| Amostra auxiliar | `S10` |
-
-O arquivo público de metadados deve usar os mesmos códigos. A tabela de correspondência com os identificadores originais não deve ser versionada.
 
 ## Entradas esperadas
 
