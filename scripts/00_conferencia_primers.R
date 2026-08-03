@@ -28,20 +28,7 @@ run_pipeline_script("00_conferencia_primers.R", "primers", function(ctx) {
 #
 # Verificação completa dos primers 341F/805R em FASTQ paired-end.
 #
-# O script:
-#   1. localiza e valida os pares R1/R2;
-#   2. confere quantidade e ordem dos identificadores das reads;
-#   3. usa todas as reads por padrão;
-#   4. pesquisa os primers na extremidade 5' e em toda a read;
-#   5. diferencia correspondência exata e tolerância de 1 ou 2 mismatches;
-#   6. mede posição, múltiplas ocorrências e presença de N;
-#   7. verifica conjuntamente os primers esperados em cada par R1/R2;
-#   8. compara os FASTQ antes e depois da remoção dos primers, quando disponível;
-#   9. associa os arquivos ao metadado atual;
-#  10. gera tabelas TSV, relatório HTML, log e gráficos de controle.
 #
-# Dependências:
-#   BiocManager::install(c("ShortRead", "Biostrings"))
 ###############################################################################
 
 suppressPackageStartupMessages({
