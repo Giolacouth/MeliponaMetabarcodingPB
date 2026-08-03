@@ -26,41 +26,7 @@ run_pipeline_script("01a_dada2_multirun.R", "dada2", function(ctx) {
 ###############################################################################
 # SCRIPT 01 — PIPELINE DADA2 (MULTI-RUN)
 #
-# Projeto: Microbioma de mel de Melipona spp. (abelhas sem ferrao)
-# Regiao : 16S rRNA V3-V4 | Primers 341F/805R | Illumina MiSeq PE 2x301
-#
-# # PARAMETROS PRINCIPAIS:
-#   truncLen       : definido por 1_1_parametro_trunclen.R (curva de retencao 99.9%)
-#   min_prevalence : 2 (~22% das 9 amostras principais; logica E)
-#   min_reads      : 10 (criterio operacional pre-especificado do projeto)
-#   overlap ref    : 427 pb (inserto sem primers: 465 - 17 - 21)
-#
-# # DESIGN MULTI-RUN:
-#   Corrida principal (n=9):
-#     - learnErrors proprio;
-#     - inferencia com pool = TRUE;
-#     - filtro por abundancia e prevalencia.
-#
-#   Corrida auxiliar (n=1):
-#     - learnErrors proprio;
-#     - inferencia sem pooling entre amostras;
-#     - filtro somente por abundancia minima;
-#     - modelo da corrida principal aplicado apenas como sensibilidade.
-#
-#   Remocao de quimeras:
-#     - executada sobre a tabela combinada das 10 amostras;
-#     - cada cenario da sensibilidade deve repetir essa etapa.
-#
-#   Saidas:
-#     - seqtab_nochim.rds: corrida principal, colunas = sequencias;
-#     - seqtab_nochim_ids.rds: corrida principal, colunas = IDs;
-#     - seqtab_auxiliar.rds: corrida auxiliar, colunas = sequencias;
-#     - seqtab_nochim_prefiltro.rds: combinado, pos-quimera e pre-filtros.
-#
-# LIMITACOES:
-#   Sem controle negativo.
-#   O modelo da corrida auxiliar foi estimado com uma unica amostra;
-#   sua estabilidade deve ser avaliada por analise de sensibilidade.
+
 ###############################################################################
 
 options(encoding = "UTF-8")
@@ -98,47 +64,31 @@ if (!nzchar(cutadapt)) {
   cutadapt <- Sys.which("cutadapt")
 }
 
-FWD <- "CCTACGGGNGGCWGCAG"
-REV <- "GACTACHVGGGTATCTAATCC"
+FWD <- 
+REV <-
 
 truncLen_by_run <- list("run_main" = c(283, 278), "run_aux" = c(283, 278))
-default_truncLen <- c(283, 278)
-maxEE_par  <- c(2, 2)
-truncQ_par <- 2
-minLen_par <- 50
+default_truncLen <- c()
+maxEE_par  <- c(, )
+truncQ_par <- 
+minLen_par <-
 
 nbases_par <- Inf
 # Política explícita por corrida: pooling apenas na corrida principal.
 pool_by_run <- c("run_main" = TRUE, "run_aux" = FALSE)
 pool_fallback <- "pseudo"
 
-minOverlap_par  <- 20
-maxMismatch_par <- 0
+minOverlap_par  <-
+maxMismatch_par <-
 
-expected_min_len <- 370
-expected_max_len <- 480
+expected_min_len <- 
+expected_max_len <- 
 
-min_total_reads <- 10   # limiar absoluto de leituras totais por ASV
-min_prevalence  <- 2    # >= 2 de 9 amostras principais (~22%); logica E
-
+min_total_reads <-   
+min_prevalence  <-   
 # ---------------------------------------------------------------------------
 # CHECKPOINT DE FILTRO (interrupcao obrigatoria antes de fixar o cenario)
-# Fluxo operacional:
-#   (1) Execute este script. Ele processa ate o filtro, grava a auditoria do
-#       que seria removido e PARA com stop() no checkpoint.
-#   (2) Inspecione ASVs_descartadas_principal_com_sequencia.tsv e, para
-#       comparar cenarios, rode 01b_auditoria_quimeras_recuperacao_ASVs.R (le o
-#       seqtab_nochim_prefiltro.rds, ja salvo antes do checkpoint).
-#   (3) Defina CENARIO_FILTRO abaixo (edite esta linha) e EXECUTE O SCRIPT
-#       NOVAMENTE. A decisao NAO e lida de nenhum arquivo: e voce quem a
-#       insere aqui.
-# Opcoes:
-#   NA_character_ -> nao confirmado; o script para no checkpoint.
-#   "aplicar"     -> aplica o filtro (reads < min_total_reads E prev < min_prevalence).
-#   "sem_filtro"  -> nao aplica filtro de frequencia; mantem todas as ASVs nao-quimericas.
-# Observacao: definir a escolha DEPOIS de inspecionar exige um criterio
-# pre-especificado e independente dos desfechos a jusante (evita vies de
-# selecao); trate cenarios alternativos como analise de sensibilidade.
+
 if (!exists("CENARIO_FILTRO")) CENARIO_FILTRO <-  "aplicar"
 
 ###############################################################################
@@ -2404,12 +2354,7 @@ tryCatch({
   cat("Controle negativo: AUSENTE.\n")
   cat("\nLIMITACAO METODOLOGICA:\n")
   cat("  O modelo de erros da corrida auxiliar (", run_auxiliar, ") foi estimado\n")
-  cat("  a partir de uma unica amostra. Embora a retencao de reads tenha sido\n")
-  cat("  elevada, a menor diversidade de amostras pode reduzir a estabilidade\n")
-  cat("  do ajuste em faixas de qualidade com poucas observacoes. A amostra foi\n")
-  cat("  adicionalmente processada com o modelo da corrida principal como analise\n")
-  cat("  de sensibilidade (ver sensibilidade_modelo_auxiliar_resumo.csv). A amostra\n")
-  cat("  auxiliar nao foi incluida nos testes estatisticos principais entre grupos.\n")
+  c
   print(sessionInfo())
 }, finally = {
   sink()
@@ -2420,22 +2365,4 @@ tryCatch({
 ###############################################################################
 cat("\n=== PIPELINE DADA2 (multi-run) FINALIZADO ===\n")
 cat("Saidas em:", output_path, "\n")
-cat("-- OBJETOS CANONICOS E ANALISE PRINCIPAL --\n")
-cat(" - seqtab_nochim.rds            (principal, pos-filtro — colunas = sequencias)\n")
-cat(" - ASVs.fa                      (principal + exclusivas_aux — FASTA para BLAST)\n")
-cat(" - ASV_table.tsv / ASV_table_long.tsv (contagens por ASV; apenas corrida principal)\n")
-cat(" - ASV_sequences.tsv            (todos os IDs com coluna Origem)\n")
-cat("-- ANALISE SUPLEMENTAR (auxiliar) --\n")
-cat(" - seqtab_auxiliar.rds          (auxiliar, pos-filtro; modelo de erros proprio; modelo principal apenas em sensibilidade)\n")
-cat(" - seqtab_global_nochim.rds     (main + aux — colunas = sequencias; entrada Scripts 2-3)\n")
-cat(" - seqtab_global_nochim_ids.rds (main + aux — colunas = IDs ASV/ASV_AUX)\n")
-cat(" - ASVs_principal.fa            (FASTA so da corrida principal)\n")
-cat(" - ASVs_auxiliar_exclusivas.fa  (FASTA das ASVs exclusivas da auxiliar)\n")
-cat(" - ASV_table_auxiliar_long.tsv\n")
-cat("-- UTILITARIOS --\n")
-cat(" - seqtab_nochim_prefiltro.rds  (combinado, pre-filtro — auditoria/sensibilidade; nao e entrada do Script 9)\n")
-cat(" - track_reads.csv              (raw->input->filtradas->denoised->merged->final)\n")
-cat(" - sensitivity_thresholds.csv   (avaliado sobre corrida principal, n=9)\n")
-cat(" - cutadapt_retention.csv / primer_residual_check.csv\n")
-cat("Proximo passo: 01b_auditoria_quimeras_recuperacao_ASVs.R (validar limiares de filtro)\n")
-})
+
