@@ -25,32 +25,7 @@ rm(.file_args, .script_dir, .bootstrap_candidates, .bootstrap_files)
 run_pipeline_script("01b_auditoria_quimeras_recuperacao_ASVs.R", "auditoria_asvs", function(ctx) {
 ###############################################################################
 # SCRIPT 01b — AUDITORIA E RECUPERACAO DE ASVs
-#
-# OBJETIVO
-#   Auditar ASVs removidas após a remoção de quimeras e produzir cenários de
-#   recuperação SEM sobrescrever os resultados primários do pipeline.
-#
-# O QUE ESTE SCRIPT CONSEGUE RECUPERAR
-#   - ASVs presentes em seqtab_nochim_prefiltro.rds:
-#       já passaram pelo filtro de comprimento;
-#       foram consideradas NÃO QUIMÉRICAS pelo pipeline;
-#       podem ter sido removidas apenas pelos filtros posteriores de
-#       abundância/prevalência.
-#
-# O QUE ESTE SCRIPT NÃO CONSEGUE RECUPERAR SEM ARQUIVOS ADICIONAIS
-#   - reads removidas por Cutadapt/filterAndTrim;
-#   - pares rejeitados no merge;
-#   - ASVs removidas pelo filtro de comprimento antes de serem salvas;
-#   - ASVs classificadas como quimeras, caso seqtab_prechimera.rds não exista.
-#
-# SAÍDAS
-#   - inventário completo das ASVs pós-quimera e pré-filtro;
-#   - ASVs removidas pela regra atual, com sequência e contagens por amostra;
-#   - cenários atual, relaxado e sem filtro de frequência;
-#   - tabelas RDS de recuperação, sem modificar os objetos oficiais;
-#   - FASTA das candidatas;
-#   - auditoria opcional das quimeras, quando seqtab_prechimera.rds e
-#     chimera_flags_baseline.rds estiverem disponiveis.
+
 ###############################################################################
 
 options(
@@ -89,17 +64,17 @@ for (d in c(audit_path, table_path, fasta_path, plot_path, rds_path, log_path)) 
 }
 
 # Entradas obrigatórias e opcionais
-prefilter_file <- ctx$contracts[["seqtab_nochim_prefiltro"]]
+prefilter_file <- ctx$contracts[[""]]
 
-main_final_file <- ctx$contracts[["seqtab_nochim"]]
+main_final_file <- ctx$contracts[[""]]
 
-aux_final_file <- ctx$contracts[["seqtab_auxiliar"]]
+aux_final_file <- ctx$contracts[[]]
 
-prelength_file <- ctx$contracts[["seqtab_pre_filtro_comprimento"]]
+prelength_file <- ctx$contracts[[]]
 
-prechimera_file <- ctx$contracts[["seqtab_prechimera"]]
+prechimera_file <- ctx$contracts[]
 
-chimera_flags_file <- ctx$contracts[["chimera_flags_baseline"]]
+chimera_flags_file <- ctx$contracts[]
 
 ###############################################################################
 # 2. REGRAS ATUAIS E CENÁRIOS DE RECUPERAÇÃO
@@ -236,9 +211,7 @@ validate_seqtab <- function(x, object_name) {
     )
   }
 
-  # DADA2 (isBimeraDenovoTable) espera contagens inteiras; manter integer.
-  # Ressalva: valores > 2^31 sofreriam overflow -> NA. Irrelevante para
-  # contagens de ASV por amostra (muito abaixo desse limite), mas registrado.
+  #
   storage.mode(x) <- "integer"
   x
 }
