@@ -1,0 +1,120 @@
+# Pipeline 16S de mel de abelhas sem ferrão
+
+Este repositório reúne os scripts usados no processamento de amplicons 16S rRNA V3–V4, na classificação taxonômica, na construção de objetos `phyloseq` e na produção de análises e figuras. A versão pública foi limpa para remover caminhos locais, identificadores originais de corridas, nomes particulares de amostras, resultados escritos diretamente no código e blocos de desenvolvimento que não participavam da execução.
+
+Os comentários metodológicos e os parâmetros necessários à reprodução foram mantidos. A remoção de comentários não alterou intencionalmente os cálculos dos scripts de origem.
+
+## Estado do conjunto
+
+Os arquivos anexados não continham todos os módulos citados pelo pipeline. Portanto, esta versão é adequada para revisão e organização no GitHub, mas a execução integral depende da inclusão dos seguintes arquivos definitivos:
+
+- `scripts/02d_BEExact.R`;
+- `scripts/06b_inext.R`;
+- `scripts/08_analises_ecologicas.R`;
+- `scripts/09_ancombc2.R`, correspondente ao método de abundância diferencial adotado no artigo.
+
+O arquivo `analysis/sensitivity/09_deseq2.R` foi preservado somente como análise de sensibilidade. Ele não integra o fluxo principal quando ANCOM-BC2/ANCOM é o método declarado no artigo.
+
+## Estrutura
+
+| Caminho | Finalidade |
+|---|---|
+| `R/pipeline_bootstrap.R` | Define os caminhos, as pastas de saída e os contratos entre etapas. |
+| `R/funcoes_estatisticas_exatas.R` | Reúne funções de testes exatos por enumeração das alocações únicas. |
+| `scripts/` | Contém as etapas principais disponibilizadas. |
+| `analysis/sensitivity/` | Contém análises que não fazem parte do fluxo inferencial principal. |
+| `tools/legacy/` | Contém ferramentas de migração ou retomada, não executadas no pipeline regular. |
+| `config/environment.example` | Exemplo de variáveis de ambiente para uma execução local. |
+
+## Descrição dos scripts
+
+| Script | Descrição básica |
+|---|---|
+| `00_conferencia_primers.R` | Confere pareamento dos FASTQ, integridade dos identificadores e ocorrência/orientação dos primers. |
+| `01a_dada2_multirun.R` | Remove primers, filtra reads, estima erros por corrida, infere ASVs, une tabelas, remove quimeras e exporta matrizes e auditorias. |
+| `01b_auditoria_quimeras_recuperacao_ASVs.R` | Audita ASVs removidas e produz cenários de sensibilidade sem substituir o resultado principal. |
+| `02a_silva138.R` | Classifica as ASVs com SILVA 138.2 usando DADA2. |
+| `02b_rdp19.R` | Classifica as ASVs com RDP 19 usando DADA2. |
+| `02c_Greengenes2.R` | Classifica as ASVs com Greengenes2 e preserva a nomenclatura derivada do GTDB. |
+| `02e_GSRDB_V3V4_QIIME2.R` | Executa a classificação com GSR-DB V3–V4 por QIIME 2 e salva a análise principal e a sensibilidade. |
+| `04_rblast.R` | Alinha ASVs contra um banco local NCBI 16S e organiza evidências por ASV. |
+| `05_comparacao_banco_de_dados.R` | Integra as classificações por prioridade hierárquica e registra conflitos entre bancos. |
+| `06a_phyloseq.R` | Constrói e valida os objetos `phyloseq`, exporta componentes e calcula resultados descritivos. |
+| `10_graficos.R` | Lê resultados oficiais das etapas anteriores e gera as figuras; não usa resultados numéricos fixos nas legendas. |
+| `11a_faprotax_graficos.R` | Realiza a inferência funcional por FAPROTAX com `microeco` e produz tabelas e figuras. |
+
+## Identificadores públicos
+
+Para evitar nomes particulares, a versão pública usa:
+
+| Campo | Código público |
+|---|---|
+| Corrida principal | `run_main` |
+| Corrida auxiliar | `run_aux` |
+| Amostra auxiliar | `S10` |
+
+O arquivo público de metadados deve usar os mesmos códigos. A tabela de correspondência com os identificadores originais não deve ser versionada.
+
+## Entradas esperadas
+
+O pipeline pressupõe:
+
+- FASTQ paired-end em `data/raw/` ou no caminho indicado por `PIPELINE_RAW_DIR`;
+- `metadados.tsv` na mesma pasta dos dados brutos;
+- bancos taxonômicos locais em `bancodados/`;
+- Cutadapt disponível no `PATH` ou indicado por `CUTADAPT_BIN`;
+- R e os pacotes carregados por cada script;
+- QIIME 2 para a etapa GSR-DB;
+- BLAST+ e um banco local NCBI 16S para a etapa de alinhamento.
+
+Os bancos e os FASTQ não devem ser enviados ao GitHub. Para cada banco, documente nome, versão, fonte, licença, nome esperado do arquivo e checksum SHA-256.
+
+## Configuração
+
+Execute a partir da raiz do repositório. As variáveis abaixo podem ser ajustadas diretamente no terminal ou carregadas a partir do exemplo em `config/environment.example`.
+
+```bash
+export PIPELINE_PROJECT_DIR="$PWD"
+export PIPELINE_LIB_DIR="$PWD/R"
+export PIPELINE_RAW_DIR="$PWD/data/raw"
+export PIPELINE_OUTPUT_DIR="$PWD/results/output_V1"
+export PIPELINE_VERSION="V1"
+export CUTADAPT_BIN="$(command -v cutadapt)"
+```
+
+## Ordem de execução
+
+```bash
+Rscript scripts/00_conferencia_primers.R
+Rscript scripts/01a_dada2_multirun.R
+Rscript scripts/01b_auditoria_quimeras_recuperacao_ASVs.R
+Rscript scripts/02a_silva138.R
+Rscript scripts/02b_rdp19.R
+Rscript scripts/02c_Greengenes2.R
+Rscript scripts/02d_BEExact.R
+Rscript scripts/02e_GSRDB_V3V4_QIIME2.R
+Rscript scripts/04_rblast.R
+Rscript scripts/05_comparacao_banco_de_dados.R
+Rscript scripts/06a_phyloseq.R
+Rscript scripts/06b_inext.R
+Rscript scripts/08_analises_ecologicas.R
+Rscript scripts/09_ancombc2.R
+Rscript scripts/10_graficos.R
+Rscript scripts/11a_faprotax_graficos.R
+```
+
+O Script 01 contém um checkpoint para confirmar o cenário de filtragem. A decisão deve ser predefinida e registrada antes de prosseguir para as análises a jusante.
+
+## Reprodutibilidade e publicação
+
+Antes de tornar o repositório público:
+
+1. inclua os quatro módulos ausentes listados acima;
+2. acrescente um `renv.lock` gerado no ambiente definitivo;
+3. publique um metadado anonimizado e seu dicionário de campos;
+4. valide a sintaxe de todos os scripts com `parse(file = ...)`;
+5. execute o fluxo em uma clonagem limpa;
+6. compare os resultados finais com os números relatados no artigo;
+7. escolha uma licença e crie uma versão marcada para o artigo.
+
+Os arquivos em `tools/legacy/` devem permanecer fora da ordem principal. O script de retomada depende de objetos existentes na mesma sessão R e não substitui uma execução integral reprodutível.
