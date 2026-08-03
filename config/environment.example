@@ -1,0 +1,9 @@
+PIPELINE_PROJECT_DIR=/caminho/para/melipona_16s_pipeline
+PIPELINE_LIB_DIR=/caminho/para/melipona_16s_pipeline/R
+PIPELINE_RAW_DIR=/caminho/para/melipona_16s_pipeline/data/raw
+PIPELINE_OUTPUT_DIR=/caminho/para/melipona_16s_pipeline/results/output_V1
+PIPELINE_VERSION=V1
+CUTADAPT_BIN=/caminho/para/cutadapt
+QIIME2_ENV=
+MIGRATION_DRY_RUN=true
+MIGRATION_REMOVE_IDENTICAL=false

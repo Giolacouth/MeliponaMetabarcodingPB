@@ -1,5 +1,30 @@
+# -----------------------------------------------------------------------------
+# Infraestrutura compartilhada: caminhos, I/O, auditoria e metadados.
+# -----------------------------------------------------------------------------
+.file_args <- sub("^--file=", "", commandArgs(trailingOnly = FALSE)[
+  grepl("^--file=", commandArgs(trailingOnly = FALSE))
+])
+.script_dir <- if (length(.file_args)) {
+  dirname(normalizePath(.file_args[[1L]], mustWork = FALSE))
+} else {
+  getwd()
+}
+.bootstrap_candidates <- unique(Filter(nzchar, c(
+  Sys.getenv("PIPELINE_LIB_DIR", unset = ""),
+  file.path(.script_dir, "..", "R"),
+  file.path(getwd(), "R"),
+  file.path(getwd(), "..", "R")
+)))
+.bootstrap_files <- file.path(.bootstrap_candidates, "pipeline_bootstrap.R")
+.bootstrap_files <- .bootstrap_files[file.exists(.bootstrap_files)]
+if (!length(.bootstrap_files)) {
+  stop("pipeline_bootstrap.R nao localizado; defina PIPELINE_LIB_DIR.", call. = FALSE)
+}
+source(.bootstrap_files[[1L]], local = .GlobalEnv)
+rm(.file_args, .script_dir, .bootstrap_candidates, .bootstrap_files)
+run_pipeline_script("00_conferencia_primers.R", "primers", function(ctx) {
 ###############################################################################
-# 0_conferencia_primers.R
+# 00_conferencia_primers.R
 #
 # Verificação completa dos primers 341F/805R em FASTQ paired-end.
 #
@@ -28,27 +53,15 @@ suppressPackageStartupMessages({
 # 1. CONFIGURAÇÃO
 ###############################################################################
 
-base_path <- "/home/giovanna/Documentos/meta5bancos"
-
-raw_path <- file.path(
-  base_path,
-  "raw"
+base_path <- ctx$base_path
+raw_path <- ctx$raw_path
+metadata_path <- file.path(raw_path, "metadados.tsv")
+pipeline_version <- ctx$version
+trimmed_path <- Sys.getenv(
+  "PRIMER_TRIMMED_PATH",
+  unset = file.path(ctx$layout$stages$dada2$root, "fastq_trimmed")
 )
-
-metadata_path <- file.path(
-  raw_path,
-  "metadados.tsv"
-)
-
-trimmed_path <- file.path(
-  base_path,
-  "primers_removidos"
-)
-
-output_path <- file.path(
-  base_path,
-  "output_conferencia_primers"
-)
+output_path <- ctx$stage$root
 # Primers V3–V4
 FWD <- DNAString("CCTACGGGNGGCWGCAG")       # 341F
 REV <- DNAString("GACTACHVGGGTATCTAATCC")   # 805R
@@ -66,14 +79,14 @@ mismatch_whole_read <- 0L
 allow_indels <- FALSE
 
 # Por padrão, analisar todas as reads.
-# Para limitar, use um inteiro, por exemplo: max_reads <- 100000L
+# Um valor inteiro em max_reads limita a quantidade analisada.
 max_reads <- Inf
 
 # Quando max_reads for finito:
 #   "random" = seleção aleatória reprodutível dos mesmos pares R1/R2
 #   "first"  = primeiras reads
 sampling_method <- "random"
-random_seed <- 20260703L
+random_seed <- 1234L
 
 # Limiares apenas para geração de alertas no relatório
 minimum_expected_primer_percent_raw <- 90
@@ -1264,7 +1277,8 @@ plot_expected_primers <- function(stage, filename, title_text) {
     legend.text = rownames(matrix_values),
     args.legend = list(x = "bottom", inset = c(0, -0.35), horiz = TRUE, bty = "n")
   )
-  abline(h = c(1, 90), lty = 3)
+  abline(h = c(maximum_residual_primer_percent_trimmed,
+               minimum_expected_primer_percent_raw), lty = 3)
 
   invisible(NULL)
 }
@@ -1643,7 +1657,7 @@ cat("Relatório HTML:",
 if (!"apos_remocao" %in% unique(all_pairs$Stage)) {
   cat(
     "\n[AVISO] A pasta pós-remoção não foi analisada.\n",
-    "Ajuste 'trimmed_path' quando os FASTQ sem primers estiverem disponíveis.\n",
+    "Use PRIMER_TRIMMED_PATH para indicar outra pasta de FASTQ sem primers.\n",
     sep = ""
   )
 }
@@ -1659,3 +1673,4 @@ if (n_errors > 0L) {
 }
 
 cat("\nCheckpoint final: OK\n")
+})
