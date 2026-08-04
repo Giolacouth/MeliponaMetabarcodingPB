@@ -30,39 +30,7 @@ run_pipeline_script("04_rblast.R", "blast", function(ctx) {
 #   Classificar as ASVs por alinhamento contra o banco local NCBI 16S e
 #   produzir evidencias auditaveis para o Script 05.
 #
-# Entradas canonicas
-#   output_V1/seqtab_global_nochim.rds
-#   output_V1/ASV_sequences.tsv
-#
-# Saida exclusiva
-#   output_V1/BLAST_NCBI16S/
-#     entrada/       FASTA usado na busca
-#     rds/           matrizes e objetos consumidos pelo Script 05
-#     tabelas/       resultados e auditorias
-#     logs/          stdout, stderr e comando executado
-#     checkpoints/   checkpoint final
-#
-# Contratos consumidos pelo Script 05
-#   BLAST_NCBI16S/rds/taxa_blast97.rds
-#   BLAST_NCBI16S/rds/taxa_blast100.rds
-#   BLAST_NCBI16S/rds/blast_evidencias_por_asv.rds
-#   BLAST_NCBI16S/tabelas/metadata_blast.csv
-#
-# Criterios pre-especificados
-#   - camada de especie:
-#       identidade = 100%; cobertura da consulta = 100%;
-#       mismatches = 0; gaps = 0; alinhamento cobre toda a ASV;
-#       todos os melhores hits informativos concordam.
-#   - camada candidata de genero:
-#       identidade >= 97%; cobertura da consulta = 100%;
-#       todos os melhores hits informativos concordam no genero.
-#
-# Nota metodologica
-#   O corte de 97% e uma regra operacional de triagem, nao uma fronteira
-#   taxonomica universal. Hackmann (bioRxiv, 2025; doi:
-#   10.1101/2025.02.04.636517) mostrou sobreposicao ampla das identidades
-#   entre ranks usando 16S quase completo. A decisao final de Genus ocorre no
-#   Script 05, combinando a evidencia BLAST com classificadores taxonomicos.
+# 
 ###############################################################################
 
 options(encoding = "UTF-8", stringsAsFactors = FALSE, warn = 1)
