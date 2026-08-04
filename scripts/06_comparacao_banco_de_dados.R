@@ -58,27 +58,6 @@ run_pipeline_script("05_comparacao_banco_de_dados.R", "taxonomia", function(ctx)
 #   - O addSpecies exato do SILVA substitui o Species k-mer do proprio SILVA,
 #     mas permanece um unico resultado SILVA.
 #
-# GSR-DB
-#   - A camada principal confidence=disable e a primeira prioridade.
-#   - A camada confidence=0.7 e preservada somente como sensibilidade.
-#   - As duas camadas nunca contam como bancos distintos.
-#
-# BLAST
-#   - A camada exata de Species participa da decisao com prioridade maxima.
-#   - A camada candidata de Genus (>=97%) permanece apenas como auditoria.
-#   - O match exato e auditado separadamente, inclusive quanto a saturacao da
-#     busca por MAX_TARGET_SEQS.
-#
-# CONTRATOS PRESERVADOS PARA O SCRIPT 06
-#   output_V1/taxa_consenso_final.rds
-#   output_V1/asvs_contaminantes_excluir.csv
-#   output_V1/metadata_consenso_taxonomico.csv
-#
-# OBSERVACAO SOBRE NOMES LEGADOS
-#   Os nomes "consenso" sao preservados nos arquivos contratuais para nao
-#   quebrar os Scripts 06-12. Metodologicamente, o resultado e uma
-#   classificacao integrada por prioridade hierarquica, nao um consenso por
-#   maioria.
 ###############################################################################
 
 gc()
