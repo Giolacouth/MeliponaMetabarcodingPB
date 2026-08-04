@@ -36,31 +36,7 @@ run_pipeline_script("06a_phyloseq.R", "phyloseq", function(ctx) {
 #   4. Descrever e exportar ps_plus10 separadamente. A inferencia ecologica
 #      nao filogenetica pertence ao Script 08; a filogenetica, ao Script 07.
 #
-# Funil invertido:
-#   Nivel 1 — amostra individual
-#   Nivel 2 — BeeSpecies (alpha, composicao, beta, permanova)
-#   Nivel 3 — covariaveis (descritivo; modelo condicional ao tamanho amostral)
 #
-# Dependencias:
-#   output_V1/seqtab_global_nochim.rds   (Script 1)
-#   output_V1/taxa_consenso_final.rds    (Script 5 — hierarquia especifica por rank)
-#   output_V1/metadata_consenso_taxonomico.csv
-#   output_V1/comparacao_bancos/sensibilidade_gsr/taxa_gsr07_alinhada_analise.rds (opcional)
-#   metadata_final.tsv
-#
-# NOTA SOBRE TAXONOMIA:
-#   Os objetos phyloseq armazenam NA onde a classificacao e ausente.
-#   A conversao para "Unclassified" ocorre apenas na camada de visualizacao
-#   (melt_df em gerar_barplot_tax / gerar_heatmap) para preservar o
-#   comportamento correto de tax_glom(NArm = FALSE).
-#
-# Saidas:
-#   output_V1/phyloseq_meliponini_completo_10.rds
-#   output_V1/phyloseq_core9_primeira_run.rds
-#   output_V1/phyloseq_plus10_com_auxiliar.rds
-#   output_V1/{prefixo}_*  : tabelas por conjunto
-#   plots_V1/phyloseq/core9_primeira_run/       : figuras core9
-#   plots_V1/phyloseq/plus10_sensibilidade_auxiliar/ : figuras plus10
 ###############################################################################
 
 options(encoding = "UTF-8", stringsAsFactors = FALSE)
@@ -558,10 +534,7 @@ if (length(extras_taxa) > 0L) {
   )
 }
 
-# Construir matriz ordenada com NA onde nao ha correspondencia.
-# IMPORTANTE: NA e mantido deliberadamente nos objetos phyloseq.
-# tax_glom(NArm = FALSE) trata NA de forma distinta de "Unclassified";
-# substituicao prematura poderia mesclar taxa de linhagens distintas.
+
 taxa_ord <- matrix(NA_character_, length(asv_seqs), length(RANKS_ESPERADOS),
                    dimnames = list(asv_ids, RANKS_ESPERADOS))
 validos <- !is.na(idx_match)
@@ -634,8 +607,7 @@ if (anyDuplicated(meta$SampleLabel) > 0) {
   )
 }
 
-# Padronizar a especie da abelha como BeeSpecies. O alias legado Species e
-# aceito somente quando BeeSpecies ainda nao existe; depois e removido para nao
+
 # colidir com Species bacteriana da tax_table em psmelt().
 if (!"BeeSpecies" %in% colnames(meta)) meta$BeeSpecies <- meta$Species
 if ("Species" %in% colnames(meta)) meta$Species <- NULL
@@ -815,9 +787,7 @@ saveRDS(ps_plus10, file.path(output_path, "phyloseq_plus10_com_auxiliar.rds"))
 # 8B. OBJETOS PARA SENSIBILIDADE TAXONOMICA GSR 0.7
 #
 # A matriz de contagens, metadados, refseqs e lista de contaminantes permanecem
-# identicos ao consenso principal. Somente a tax_table e substituida pela GSR.
-# Nao se repetem alfa/beta/PERMANOVA, pois essas analises em ASV nao dependem
-# do nome taxonomico quando o universo de ASVs e mantido.
+# identicos ao consenso principal. 
 # ---------------------------------------------------------------------------
 
 gsr_taxonomia_disponivel <- file.exists(arq_taxa_gsr07)
@@ -934,14 +904,6 @@ cat("\n")
 ###############################################################################
 # 9. FUNCAO PRINCIPAL: ANALISE EM FUNIL INVERTIDO
 #
-# Parametros:
-#   ps_obj             — objeto phyloseq a ser analisado
-#   prefixo            — identificador de arquivo para todos os outputs
-#   dir_fig            — diretorio para salvar figuras
-#   executar_testes    — se FALSE, ignora teste de postos exato, PERMANOVA e BETADISPER
-#   incluir_covariaveis — condiciona avaliacao de covariaveis em modelos inferenciais
-#
-# Retorna lista com: ps, ps_rel, alfa, dist_bray, dist_jaccard, covariaveis
 ###############################################################################
 
 obter_mapa_samplelabel <- function(ps_obj) {
@@ -984,9 +946,8 @@ aplicar_samplelabel <- function(x, mapa) {
 }
 
 
-# Auditoria explícita das premissas dos testes por BeeSpecies. A coluna
-# Atendida_diretamente distingue requisitos matematicos avaliaveis no objeto de
-# limitacoes de desenho que nao podem ser corrigidas por codigo.
+# Auditoria explícita das premissas dos testes por BeeSpecies. 
+
 auditar_premissas_testes <- function(ps_obj, prefixo, output_path) {
   meta_p <- as(phyloseq::sample_data(ps_obj), "data.frame")
   n_sp <- table(droplevels(as.factor(meta_p$BeeSpecies)))
@@ -1067,9 +1028,7 @@ auditar_premissas_testes <- function(ps_obj, prefixo, output_path) {
 }
 
 # Resume a independencia das unidades amostrais sem confundi-la com
-# independencia em relacao ao local de coleta. Cada linha representa uma
-# amostra de mel distinta, mas meliponarios compartilhados entre especies
-# podem introduzir efeitos ambientais e de manejo comuns.
+# independencia em relacao ao local de coleta.
 resumir_estrutura_meliponario <- function(ps_obj) {
   meta_design <- as(phyloseq::sample_data(ps_obj), "data.frame")
   meta_design$SampleID <- rownames(meta_design)
@@ -1124,9 +1083,7 @@ resumir_estrutura_meliponario <- function(ps_obj) {
 
   if (nrow(compartilhados) == 0L) {
     resumo <- paste(
-      "As unidades amostrais correspondem a amostras de mel distintas e,",
-      "neste conjunto, nenhum meliponario possui amostras de mais de uma",
-      "BeeSpecies. A interpretacao permanece limitada pelo baixo n por grupo."
+      
     )
   } else {
     detalhes <- paste(
@@ -1333,12 +1290,7 @@ analisar_funil_invertido <- function(ps_obj,
   # -------------------------------------------------------------------------
   # 9.3 TESTES ALFA: KRUSKAL-WALLIS (apenas se executar_testes)
   # AVISO ESTATISTICO:
-  #   - As unidades amostrais sao amostras de mel distintas.
-  #   - A independencia nao e completa em relacao ao meliponario quando um
-  #     mesmo meliponario contribui com amostras de mais de uma BeeSpecies.
-  #   - O n por BeeSpecies e pequeno.
-  #   - O teste deve ser interpretado como exploratorio, nao como evidencia isolada.
-  #   - Reportar sempre o n por grupo junto com os resultados.
+  #   -
   # -------------------------------------------------------------------------
 
   if (executar_testes) {
@@ -1399,8 +1351,7 @@ analisar_funil_invertido <- function(ps_obj,
 
   # -------------------------------------------------------------------------
   # 9.4 COMPOSICAO POR BeeSpecies — BARPLOTS
-  # NOTA: NA em taxa_table convertidos para "Unclassified" apenas em melt_df.
-  # O objeto ps_obj NAO e modificado, preservando o comportamento de tax_glom.
+  #
   # -------------------------------------------------------------------------
 
   cat("--- Composicao por BeeSpecies: barplots ---\n\n")
