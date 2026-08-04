@@ -27,45 +27,7 @@ run_pipeline_script("11a_faprotax_graficos.R", "faprotax", function(ctx) {
 # SCRIPT 11 — FAPROTAX / INFERENCIA FUNCIONAL ECOLOGICA 16S
 # Versao revisada: microeco::trans_func
 #
-# Projeto: Microbioma de mel de Melipona spp. (abelhas sem ferrao)
 #
-# Entradas principais, geradas pelos scripts anteriores:
-#   output_<V>/06_phyloseq/phyloseq_core9_primeira_run.rds
-#   output_<V>/06_phyloseq/phyloseq_plus10_com_auxiliar.rds
-#   output_<V>/01_dada2/ASV_sequences.tsv
-#
-# Objetivo:
-#   Inferir potencial funcional ecologico/metabolico por FAPROTAX a partir da
-#   taxonomia consenso integrada aos objetos phyloseq.
-#
-# Motor FAPROTAX:
-#   microeco::trans_func$new(dataset = microtable)
-#   trans_func$cal_func(prok_database = "FAPROTAX")
-#
-# Decisao metodologica:
-#   - Este script NAO usa faprotax_function_taxon_map.tsv.
-#   - A anotacao FAPROTAX e feita pelo motor interno do microeco.
-#   - As funcoes FAPROTAX nao sao mutuamente exclusivas: uma mesma ASV pode
-#     contribuir para mais de uma funcao. Portanto, a soma das abundancias
-#     relativas entre funcoes pode exceder 100%.
-#   - Os testes inferenciais sao exploratorios devido ao baixo n por grupo.
-#
-# Estrutura analitica:
-#   core9  — 9 amostras principais: descritivo + inferencia exploratoria.
-#   plus10 — 10 amostras: sensibilidade exploratoria com testes separados; Run nao estimavel.
-#
-# Saidas:
-#   output_<V>/11_faprotax/core9_*
-#   output_<V>/11_faprotax/plus10_*
-#   output_<V>/11_faprotax/figuras/*
-#
-# Observacao:
-#   Este script nao altera arquivos dos Scripts 01-10. Ele apenas le entradas
-#   existentes e escreve novas saidas em subpastas proprias.
-###############################################################################
-
-options(encoding = "UTF-8", stringsAsFactors = FALSE, warn = 1)
-
 ###############################################################################
 # 0. PACOTES
 ###############################################################################
@@ -129,25 +91,18 @@ RANKS_CANONICOS <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "
 
 # Paletas mantidas coerentes com os graficos principais do pipeline.
 CORES_ESP <- c(
-  "Melipona fasciculata" = "#FF6361",
-  "Melipona scutellaris" = "#000489",
-  "Melipona subnitida"   = "#21EBC9"
+  
 )
 
 LABELS_ESP <- c(
-  "Melipona fasciculata" = "M. fasciculata",
-  "Melipona scutellaris" = "M. scutellaris",
-  "Melipona subnitida"   = "M. subnitida"
-)
+  
 
 CORES_STATUS <- c(
-  "Introduzida" = "#FF6361",
-  "Nativa"      = "#000489"
+ 
 )
 
 LABELS_STATUS <- c(
-  "Introduzida" = "Introduzida",
-  "Nativa"      = "Nativa"
+ 
 )
 
 CORES_MULTI <- c(
@@ -475,10 +430,7 @@ limpar_taxonomia_para_microeco <- function(tax_df, prefixo) {
 }
 
 phyloseq_para_microeco <- function(ps_obj, prefixo) {
-  # microeco::microtable$new() exige data.frame tradicional, não matrix/tibble.
-  # Algumas versões do microeco aplicam droplevels() internamente em colunas
-  # categóricas; por isso, metadados e taxonomia são convertidos para factor
-  # antes da criação do microtable. A otu_table permanece estritamente numérica.
+  
 
   otu_mat <- matriz_taxa_linhas(ps_obj)
   otu_df <- as.data.frame(otu_mat, check.names = FALSE, stringsAsFactors = FALSE)
@@ -527,11 +479,7 @@ phyloseq_para_microeco <- function(ps_obj, prefixo) {
     stop(prefixo, ": tax_table nao esta em formato data.frame antes do microeco.", call. = FALSE)
   }
 
-  # Compatibilidade com versões do microeco que chamam droplevels() em colunas
-  # individualmente. Nessas versões, colunas character E numeric em sample_table
-  # podem disparar erro. Como o microeco só precisa dos metadados como grupos
-  # aqui, convertemos TODAS as colunas de sample_table e tax_table para factor.
-  # A otu_table permanece estritamente numérica.
+  
   sample_df[] <- lapply(sample_df, function(x) {
     x <- as.character(x)
     x[is.na(x)] <- ""
