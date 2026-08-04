@@ -57,22 +57,8 @@ run_pipeline_script("02e_GSRDB_V3V4_QIIME2.R", "gsr", function(ctx) {
 #     logs/         comandos, versao e mensagens do QIIME 2
 #     checkpoints/  objetos intermediarios do R
 #
-# ESTRATEGIA
-#   1. Classificacao principal reproduzindo a recomendacao do artigo:
-#        confidence = disable.
-#   2. Sensibilidade conservadora opcional:
-#        confidence = 0.7 (padrao do QIIME 2).
-#   3. Atribuicoes compostas da GSR (mais de um genero/especie para a mesma
-#      sequencia V3-V4) sao preservadas na tabela bruta, mas convertidas em NA
-#      na matriz limpa para impedir falsa resolucao taxonomica.
-#   4. Linhagens com prefixos mistos sao analisadas por posicao canonica e
-#      auditadas. Nenhum token sem prefixo e descartado silenciosamente.
-#   5. A nomenclatura de Phylum e preservada como fornecida pelo GSR. A
-#      harmonizacao entre bancos ocorre uma unica vez no Script 05.
 #
-# POSICAO NO PIPELINE
-#   Executar apos o Script 01. Nao depende dos Scripts 02-05.
-###############################################################################
+#
 
 options(encoding = "UTF-8", stringsAsFactors = FALSE, warn = 1)
 
@@ -236,11 +222,8 @@ resolver_qiime <- function() {
 
   abort(
     paste0(
-      "QIIME 2 nao encontrado. Ative o ambiente antes de executar o R, por exemplo:\n",
-      "  conda activate <ambiente_qiime2>\n",
-      "ou defina no terminal:\n",
-      "  export QIIME2_ENV=<ambiente_qiime2>\n",
-      "Depois execute novamente este script."
+      "QIIME 2 nao encontrado. Ative o ambiente antes de executar o R, por exemplo:\n"
+     
     )
   )
 }
@@ -514,16 +497,7 @@ normalizar_nome_rank <- function(x) {
 
 # Parser detalhado de linhagens QIIME 2.
 #
-# Regras:
-#   - tokens com prefixo reconhecido (d__/k__/p__/...) sao atribuidos pelo
-#     prefixo, independentemente da posicao;
-#   - taxonomias totalmente sem prefixo usam fallback posicional canonico;
-#   - em linhagens mistas, tokens sem prefixo so sao recuperados por posicao
-#     quando os tokens prefixados presentes ocupam posicoes canonicas
-#     coerentes. Caso contrario, o token e preservado na auditoria e nao e
-#     atribuido a um rank potencialmente incorreto;
-#   - prefixos desconhecidos, ranks duplicados e conflitos nunca sobrescrevem
-#     valores silenciosamente.
+
 parse_lineage_detalhado <- function(lineage) {
   out <- setNames(rep(NA_character_, length(RANKS)), RANKS)
 
@@ -825,9 +799,7 @@ limpar_taxonomia_gsr <- function(taxa_raw) {
     out[eh_placeholder(out[, rk]), rk] <- NA_character_
   }
 
-  # Nao harmonizar Phylum neste script. O valor original do classificador GSR
-  # e preservado para rastreabilidade. O Script 05 aplica a mesma tabela de
-  # harmonizacao a todos os bancos em um unico ponto do pipeline.
+  # Nao harmonizar Phylum neste script. 
 
   comp_genus <- vapply(out[, "Genus"], eh_composta, logical(1), rank = "Genus")
   comp_species <- vapply(out[, "Species"], eh_composta, logical(1), rank = "Species")
