@@ -42,23 +42,7 @@ run_pipeline_script("10_graficos.R", "graficos", function(ctx) {
 #   G13  SIMPER top 10 ASVs por comparação
 #   G14  IndVal ASVs indicadoras (FDR-BH < 0.05)
 #
-# LIMITAÇÃO DE DESENHO (relevante para a interpretação das figuras):
-#   As perguntas de pesquisa 1 e 2 (quais microrganismos; a espécie influencia
-#   o perfil) são abordadas por estas figuras. A pergunta 3 (a geografia indica
-#   presença/ausência) NÃO é separável da espécie: espécie e município/ambiente
-#   estão confundidos no desenho amostral (ver Script 08, seção 9). Cores e
-#   agrupamentos por BeeSpecies nestas figuras carregam, inseparavelmente,
-#   variação geográfica. Não atribuir diferenças exclusivamente à espécie.
-#
-# Dependências:
-#   output_V1/phyloseq_core9_primeira_run.rds   (Script 06)
-#   output_V1/phyloseq_plus10_com_auxiliar.rds     (Script 06)
-#   output_V1/core9_dist_bray_rel.rds           (Script 06)
-#   output_V1/core9_dist_jaccard_binary.rds     (Script 06)
-#   output_V1/deseq2/core9_completo_*.csv       (Script 09)
-#   output_V1/analises/core9_kruskal_wallis.csv (Script 08, opcional)
-#   output_V1/analises/core9_simper_top10_*.csv (Script 08, opcional)
-#   output_V1/analises/core9_indval_*.csv       (Script 08, opcional)
+# 
 ###############################################################################
 
 options(encoding = "UTF-8", stringsAsFactors = FALSE)
