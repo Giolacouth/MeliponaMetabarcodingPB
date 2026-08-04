@@ -20,18 +20,18 @@ Os comentários metodológicos e os parâmetros necessários à reprodução for
 
 | Script | Descrição básica |
 |---|---|
-| `00_conferencia_primers.R` | Confere pareamento dos FASTQ, integridade dos identificadores e ocorrência/orientação dos primers. |
-| `01a_dada2_multirun.R` | Remove primers, filtra reads, estima erros por corrida, infere ASVs, une tabelas, remove quimeras e exporta matrizes e auditorias. |
-| `01b_auditoria_quimeras_recuperacao_ASVs.R` | Audita ASVs removidas e produz cenários de sensibilidade sem substituir o resultado principal. |
-| `02a_silva138.R` | Classifica as ASVs com SILVA 138.2 usando DADA2. |
-| `02b_rdp19.R` | Classifica as ASVs com RDP 19 usando DADA2. |
-| `02c_Greengenes2.R` | Classifica as ASVs com Greengenes2 e preserva a nomenclatura derivada do GTDB. |
-| `02e_GSRDB_V3V4_QIIME2.R` | Executa a classificação com GSR-DB V3–V4 por QIIME 2 e salva a análise principal e a sensibilidade. |
-| `04_rblast.R` | Alinha ASVs contra um banco local NCBI 16S e organiza evidências por ASV. |
-| `05_comparacao_banco_de_dados.R` | Integra as classificações por prioridade hierárquica e registra conflitos entre bancos. |
-| `06a_phyloseq.R` | Constrói e valida os objetos `phyloseq`, exporta componentes e calcula resultados descritivos. |
+| `01_conferencia_primers.R` | Confere pareamento dos FASTQ, integridade dos identificadores e ocorrência/orientação dos primers. |
+| `02_dada2.R` | Remove primers, filtra reads, estima erros por corrida, infere ASVs, une tabelas, remove quimeras e exporta matrizes e auditorias. |
+| `03_auditoria_quimeras_recuperacao_ASVs.R` | Audita ASVs removidas e produz cenários de sensibilidade sem substituir o resultado principal. |
+| `04a_silva138.R` | Classifica as ASVs com SILVA 138.2 usando DADA2. |
+| `04b_rdp19.R` | Classifica as ASVs com RDP 19 usando DADA2. |
+| `04c_Greengenes2.R` | Classifica as ASVs com Greengenes2 e preserva a nomenclatura derivada do GTDB. |
+| `04e_GSRDB_V3V4_QIIME2.R` | Executa a classificação com GSR-DB V3–V4 por QIIME 2 e salva a análise principal e a sensibilidade. |
+| `05_rblast.R` | Alinha ASVs contra um banco local NCBI 16S e organiza evidências por ASV. |
+| `06_comparacao_banco_de_dados.R` | Integra as classificações por prioridade hierárquica e registra conflitos entre bancos. |
+| `07_phyloseq.R` | Constrói e valida os objetos `phyloseq`, exporta componentes e calcula resultados descritivos. |
 | `10_graficos.R` | Lê resultados oficiais das etapas anteriores e gera as figuras; não usa resultados numéricos fixos nas legendas. |
-| `11a_faprotax_graficos.R` | Realiza a inferência funcional por FAPROTAX com `microeco` e produz tabelas e figuras. |
+| `11_faprotax.R` | Realiza a inferência funcional por FAPROTAX. |
 
 
 ## Entradas esperadas
@@ -64,22 +64,22 @@ export CUTADAPT_BIN="$(command -v cutadapt)"
 ## Ordem de execução
 
 ```bash
-Rscript scripts/00_conferencia_primers.R
-Rscript scripts/01a_dada2_multirun.R
-Rscript scripts/01b_auditoria_quimeras_recuperacao_ASVs.R
-Rscript scripts/02a_silva138.R
-Rscript scripts/02b_rdp19.R
-Rscript scripts/02c_Greengenes2.R
-Rscript scripts/02d_BEExact.R
-Rscript scripts/02e_GSRDB_V3V4_QIIME2.R
-Rscript scripts/04_rblast.R
-Rscript scripts/05_comparacao_banco_de_dados.R
-Rscript scripts/06a_phyloseq.R
-Rscript scripts/06b_inext.R
-Rscript scripts/08_analises_ecologicas.R
+Rscript scripts/01_conferencia_primers.R
+Rscript scripts/02_dada2.R
+Rscript scripts/03_auditoria_quimeras_recuperacao_ASVs.R
+Rscript scripts/04a_silva138.R
+Rscript scripts/04b_rdp19.R
+Rscript scripts/04c_Greengenes2.R
+Rscript scripts/04d_BEExact.R
+Rscript scripts/04e_GSRDB_V3V4_QIIME2.R
+Rscript scripts/05_rblast.R
+Rscript scripts/06_comparacao_banco_de_dados.R
+Rscript scripts/07_phyloseq.R
+Rscript scripts/08_inext.R
+Rscript scripts/08a_analises_ecologicas.R
 Rscript scripts/09_ancombc2.R
 Rscript scripts/10_graficos.R
-Rscript scripts/11a_faprotax_graficos.R
+Rscript scripts/11_faprotax.R
 ```
 
 O Script 01 contém um checkpoint para confirmar o cenário de filtragem. A decisão deve ser predefinida e registrada antes de prosseguir para as análises a jusante.
