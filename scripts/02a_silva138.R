@@ -59,10 +59,7 @@ arq_silva    <- file.path(base_path,
                           "bancodados/Silva/silva_nr99_v138.2_toSpecies_trainset.fa.gz")
 arq_silva_sp <- file.path(base_path,
                           "bancodados/Silva/silva_v138.2_assignSpecies.fa.gz")
-# Mapa canonico ASV_ID <-> sequencia (gerado pelo Script 01). Usado para que
-# os CSVs deste script identifiquem cada ASV por ID numerico (ASV_1, ASV_2...)
-# em vez da sequencia de DNA completa, evitando erro de cruzamento manual
-# entre tabelas de bancos diferentes.
+
 arq_asvmap   <- ctx$contracts[["asv_sequences"]]
 
 MINBOOT         <- 80
@@ -107,9 +104,7 @@ com_asv <- function(mat) {
   cbind(ASV = rownames(mat), as.data.frame(mat, stringsAsFactors = FALSE))
 }
 
-# Carrega o mapa canonico ASV_ID <-> sequencia e retorna um vetor nomeado
-# (names = sequencia, valor = ASV_ID), com as mesmas validacoes de
-# integridade usadas no Script 04 (sem ID/sequencia duplicados).
+
 carregar_seq2id <- function(arq) {
   if (!file.exists(arq))
     stop("ASV_sequences.tsv ausente: ", arq,
@@ -162,10 +157,7 @@ carregar_seq2id <- function(arq) {
   setNames(m$ASV_ID, m$Sequence)
 }
 
-# Substitui a coluna "ASV" (sequencia completa) por duas colunas:
-# ASV_ID (numerico, ex. "ASV_12") e ASV_seq (sequencia, preservada para
-# rastreabilidade). ASVs ausentes do mapa (nao deveria ocorrer; checado)
-# recebem ASV_ID = NA e um aviso e emitido.
+
 com_asv_id <- function(mat, seq2id) {
   seqs <- rownames(mat)
   ids  <- unname(seq2id[seqs])
