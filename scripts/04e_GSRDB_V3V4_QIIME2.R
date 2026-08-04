@@ -30,35 +30,7 @@ run_pipeline_script("02e_GSRDB_V3V4_QIIME2.R", "gsr", function(ctx) {
 #   Classificar o mesmo universo canonico de ASVs usado por SILVA, RDP,
 #   Greengenes2, BEExact e BLAST, utilizando o classificador pre-treinado
 #   GSR-DB V3-V4 distribuido como artefato QIIME 2 (.qza).
-#
-# IMPORTANTE
-#   classifier_GSR-DB_V3-V4.qza NAO e um trainset diretamente utilizavel por
-#   dada2::assignTaxonomy(). Ele e um QIIME 2 TaxonomicClassifier e deve ser
-#   executado por qiime feature-classifier classify-sklearn.
-#
-#   Este script preserva o pipeline DADA2 a montante:
-#     DADA2 gera as ASVs -> este script importa as ASVs no QIIME 2 ->
-#     o classificador GSR atribui a taxonomia -> o resultado volta ao R.
-#
-# ENTRADAS CANONICAS DO SCRIPT 01
-#   output_V1/seqtab_global_nochim.rds
-#       - 10 amostras; colunas = sequencias das ASVs.
-#   output_V1/ASV_sequences.tsv
-#       - mapa ASV_ID <-> Sequence <-> Origem.
-#
-# ENTRADA GSR
-#   bancodados/GSR -Greengenes, Silva e RDP/classifier_GSR-DB_V3-V4.qza
-#
-# SAIDA EXCLUSIVA — NAO SOBRESCREVE OS SCRIPTS 02-06
-#   output_V1/GSR_DB_V3V4/
-#     qiime2/       artefatos .qza e exportacoes QIIME 2
-#     rds/          matrizes taxonomicas com rownames = sequencias
-#     tabelas/      CSVs de classificacao, cobertura e auditoria
-#     logs/         comandos, versao e mensagens do QIIME 2
-#     checkpoints/  objetos intermediarios do R
-#
-#
-#
+
 
 options(encoding = "UTF-8", stringsAsFactors = FALSE, warn = 1)
 
