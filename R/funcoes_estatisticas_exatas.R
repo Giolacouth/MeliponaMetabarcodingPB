@@ -1,9 +1,7 @@
 ###############################################################################
 # FUNCOES ESTATISTICAS EXATAS COMPARTILHADAS
 #
-# Testes de postos por enumeracao completa das alocacoes dos rotulos de grupo,
-# mantendo fixos os tamanhos observados. Destinado aos desenhos pequenos do
-# core9 e do plus10, sempre analisados separadamente. Nao corrige falta de independencia, confundimento ou baixo poder.
+#
 ###############################################################################
 
 FUNCOES_EXATAS_VERSAO <- "1.3.0"
@@ -16,12 +14,6 @@ FUNCOES_EXATAS_VERSAO <- "1.3.0"
   round(valor)
 }
 
-# Gera uma matriz com uma unica permutacao de indices para cada alocacao
-# distinta dos rotulos de grupo, mantendo fixos os tamanhos observados. A
-# ordenacao observada e excluida por padrao porque vegan::simper() e
-# indicspecies::multipatt()/signassoc() adicionam a estatistica observada ao
-# numerador e ao denominador do p-valor. Assim, com A alocacoes rotuladas, a
-# matriz possui A - 1 linhas e o piso teorico e exatamente 1/A.
 matriz_permutacoes_rotulos_unicos <- function(
     grupo,
     incluir_observada = FALSE,
@@ -90,10 +82,7 @@ matriz_permutacoes_rotulos_unicos <- function(
     )
   }
 
-  # Validacao defensiva da matriz entregue a vegan/indicspecies. Cada linha
-  # deve ser uma permutacao completa dos indices e deve induzir uma unica
-  # alocacao dos rotulos. A ordenacao observada nao pode estar presente quando
-  # a opcao incluir_observada estiver desativada.
+  # Validacao defensiva da matriz entregue a vegan/indicspecies.
   indice_esperado <- seq_len(n)
   linhas_validas <- apply(
     out, 1L,
