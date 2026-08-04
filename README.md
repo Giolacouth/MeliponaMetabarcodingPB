@@ -94,4 +94,4 @@ Antes de tornar o repositório público:
 6. compare os resultados finais com os números relatados no artigo;
 7. escolha uma licença e crie uma versão marcada para o artigo.
 
-Os arquivos em `tools/legacy/` devem permanecer fora da ordem principal. O script de retomada depende de objetos existentes na mesma sessão R e não substitui uma execução integral reprodutível.
+
