@@ -12,8 +12,6 @@ Os comentários metodológicos e os parâmetros necessários à reprodução for
 | `R/pipeline_bootstrap.R` | Define os caminhos, as pastas de saída e os contratos entre etapas. |
 | `R/funcoes_estatisticas_exatas.R` | Reúne funções de testes exatos por enumeração das alocações únicas. |
 | `scripts/` | Contém as etapas principais disponibilizadas. |
-| `analysis/sensitivity/` | Contém análises que não fazem parte do fluxo inferencial principal. |
-| `tools/legacy/` | Contém ferramentas de migração ou retomada, não executadas no pipeline regular. |
 | `config/environment.example` | Exemplo de variáveis de ambiente para uma execução local. |
 
 ## Descrição dos scripts
