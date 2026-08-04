@@ -26,9 +26,7 @@ run_pipeline_script("00_conferencia_primers.R", "primers", function(ctx) {
 ###############################################################################
 # 00_conferencia_primers.R
 #
-# Verificação completa dos primers 341F/805R em FASTQ paired-end.
-#
-#
+
 ###############################################################################
 
 suppressPackageStartupMessages({
@@ -50,8 +48,8 @@ trimmed_path <- Sys.getenv(
 )
 output_path <- ctx$stage$root
 # Primers V3–V4
-FWD <- DNAString("CCTACGGGNGGCWGCAG")       # 341F
-REV <- DNAString("GACTACHVGGGTATCTAATCC")   # 805R
+FWD <- DNAString()       
+REV <- DNAString()   
 
 # Região inicial examinada para confirmar presença na extremidade 5'
 window_5p <- 40L
@@ -90,13 +88,12 @@ strict_metadata <- TRUE
 # 2. PREPARAÇÃO
 ###############################################################################
 
-# Cria e valida um diretório. Ao contrário de dir.create(...,
+
 # showWarnings = FALSE), esta função não oculta a causa da falha.
 ensure_directory <- function(path, label = "diretório") {
   path <- path.expand(path)
 
-  # Conflito frequente: existe um arquivo comum com o nome reservado
-  # para a pasta de saída.
+
   if (file.exists(path) && !dir.exists(path)) {
     stop(
       sprintf(
