@@ -26,7 +26,6 @@ rm(.file_args, .script_dir, .bootstrap_candidates, .bootstrap_files)
 run_pipeline_script("09_deseq2.R", "deseq2", function(ctx) {
 ###############################################################################
 # SCRIPT 09 — DESEQ2: ABUNDÂNCIA DIFERENCIAL
-#
 ###############################################################################
 
 options(encoding = "UTF-8", stringsAsFactors = FALSE)
@@ -314,8 +313,7 @@ tryCatch(
   finally = grDevices::dev.off()
 )
 log_msg("core9_dispersao.pdf salvo", "SAVE")
-cat("Como interpretar: a maioria dos pontos deve seguir a curva.\n",
-    "Muitos pontos distantes indicam ajuste ruim.\n")
+cat("Muitos pontos distantes indicam ajuste ruim.\n")
 
 ###############################################################################
 # 7. TABELA TAXONÔMICA PARA ANOTAÇÃO
@@ -333,26 +331,23 @@ if (!setequal(taxa_tbl$ASV_ID, rownames(count_mat))) {
 }
 
 ###############################################################################
-# 8. COMPARAÇÕES PAIRWISE (3 pares)
+# 8. COMPARAÇÕES PAIRWISE 
 ###############################################################################
 
 cat("\n=== COMPARAÇÕES PAIRWISE ===\n\n")
 
 comparacoes <- list(
   list(
-    nome      = "scutellaris_vs_fasciculata",
-    contraste = c("BeeSpecies",
-                  "Melipona scutellaris", "Melipona fasciculata")
+    nome      = "",
+    contraste = c("")
   ),
   list(
-    nome      = "subnitida_vs_fasciculata",
-    contraste = c("BeeSpecies",
-                  "Melipona subnitida", "Melipona fasciculata")
+    nome      = "",
+    contraste = c("")
   ),
   list(
-    nome      = "subnitida_vs_scutellaris",
-    contraste = c("BeeSpecies",
-                  "Melipona subnitida", "Melipona scutellaris")
+    nome      = "",
+    contraste = c("")
   )
 )
 
@@ -462,8 +457,7 @@ for (i in seq_along(comparacoes)) {
 }
 
 # Correcao adicional entre todas as hipoteses dos tres contrastes.
-# O padj do DESeq2 continua sendo a referencia primaria dentro de cada
-# contraste; esta coluna mais conservadora documenta a multiplicidade global.
+
 p_global <- dplyr::bind_rows(p_global_list)
 p_global$padj_global_3_contrastes_BH <- NA_real_
 idx_p <- !is.na(p_global$pvalue)
@@ -522,7 +516,7 @@ dds_status <- tryCatch(
   }
 )
 
-contraste_status <- c("Nativo_Introduzido", "Nativa", "Introduzida")
+contraste_status <- c("")
 res_status_bruto <- results(dds_status,
   contrast = contraste_status,
   alpha = ALPHA,
@@ -574,9 +568,7 @@ log_msg("DESeq2 nativo/introduzido salvo em deseq2/nativo_introduzido_prev2", "S
 cat("\n=== PLUS10 — DESeq2 EXPLORATORIO SEPARADO ===\n\n")
 log_msg(
   paste0(
-    "plus10 inclui uma unica amostra da corrida run_aux, pertencente a ",
-    "M. fasciculata. O modelo ~ BeeSpecies nao separa batch; resultados sao ",
-    "sensibilidade exploratoria e nao substituem o core9."
+    "sensibilidade exploratoria"
   ),
   "WARN"
 )
