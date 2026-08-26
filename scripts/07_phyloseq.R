@@ -27,7 +27,7 @@ run_pipeline_script("06a_phyloseq.R", "phyloseq", function(ctx) {
 # SCRIPT 06 — PHYLOSEQ 16S / ASV
 #
 #
-# Estrutura analitica:
+# Estrutura:
 #   1. Construir objeto phyloseq completo com 10 amostras (ps_all10)
 #   2. Separar dois conjuntos:
 #        ps_core9  — 9 amostras da primeira run (analise principal)
@@ -35,7 +35,6 @@ run_pipeline_script("06a_phyloseq.R", "phyloseq", function(ctx) {
 #   3. Descrever e exportar ps_core9, sem duplicar inferencia do Script 08.
 #   4. Descrever e exportar ps_plus10 separadamente. A inferencia ecologica
 #      nao filogenetica pertence ao Script 08; a filogenetica, ao Script 07.
-#
 #
 ###############################################################################
 
@@ -48,8 +47,7 @@ suppressPackageStartupMessages({
   library(dplyr)        # Manipulacao de data.frames
   library(vegan)        # adonis2 / betadisper / permutest
   library(ggrepel)
-  # dada2 NAO e necessario no Script 6; o seqtab e lido como RDS pronto.
-  # grid e pacote base; grid::unit() e acessivel sem library(grid).
+ 
 })
 
 VERSAO        <- "4.2_core9_plus10_premissas_sem_rarefacao"
@@ -967,11 +965,6 @@ auditar_premissas_testes <- function(ps_obj, prefixo, output_path) {
     Premissa = c(
       "Grupos com pelo menos duas unidades",
       "Permutabilidade/independencia sob a hipotese nula",
-      "Grupos com pelo menos duas unidades",
-      "Permutabilidade sem efeito de corrida nao controlado",
-      "Pelo menos tres unidades por grupo para diagnostico estavel",
-      "Corrida estimavel separadamente de BeeSpecies",
-      "Independencia completa em relacao ao meliponario"
     ),
     Atendida_diretamente = c(
       all(n_sp >= 2L),
@@ -1296,7 +1289,7 @@ analisar_funil_invertido <- function(ps_obj,
   if (executar_testes) {
     cat("--- Testes alfa: teste de postos exato por BeeSpecies ---\n\n")
     log_msg(
-      "AVISO ESTATISTICO: unidades amostrais distintas, com possivel compartilhamento de ambiente e manejo dentro de meliponario; baixo n por BeeSpecies; interpretar o teste exato como exploratorio; a enumeracao nao corrige dependencia ou confundimento.", "WARN")
+      "unidades amostrais distintas, com possivel compartilhamento .a enumeracao nao corrige dependencia ou confundimento.", "WARN")
 
     kw_alfa <- function(medida) {
       z <- tryCatch(
@@ -1558,21 +1551,6 @@ analisar_funil_invertido <- function(ps_obj,
   # PERMANOVA:
   #   testa diferencas entre centroides das comunidades por BeeSpecies.
   #
-  # BETADISPER:
-  #   testa se os grupos possuem dispersoes semelhantes.
-  #   Deve ser interpretado junto com a PERMANOVA.
-  #
-  # Interpretacao:
-  #   PERMANOVA significativa + BETADISPER nao significativo:
-  #     evidencia exploratoria de diferenca de composicao entre BeeSpecies.
-  #
-  #   PERMANOVA significativa + BETADISPER significativo:
-  #     resultado pode refletir diferenca de dispersao entre grupos, nao apenas
-  #     diferenca entre centroides.
-  #
-  #   PERMANOVA nao significativa:
-  #     ausencia de evidencia estatistica, mas nao ausencia de diferenca biologica,
-  #     pois o n amostral e pequeno.
   # -------------------------------------------------------------------------
 
   if (executar_testes) {
@@ -1670,11 +1648,6 @@ analisar_funil_invertido <- function(ps_obj,
 
       # ---------------------------------------------------------------------
       # BETADISPER
-      # GUARDA: betadisper estima a dispersao de cada grupo em torno do
-      # centroide. Com n < 3 a estimativa tem 1 g.l. (instavel) e
-      # bias.adjust = TRUE pode produzir valores degenerados ou erro.
-      # Quando algum grupo tem n < 3, o teste e omitido e registrado como
-      # nao realizavel por desenho amostral.
       # ---------------------------------------------------------------------
 
       betadisper_realizavel <- all(n_grupo_local >= 3)
@@ -1927,10 +1900,6 @@ analisar_funil_invertido <- function(ps_obj,
 
   # -------------------------------------------------------------------------
   # 9.7 NIVEL 3 — COVARIAVEIS
-  # Avalia cada covariavel candidata quanto a: completude, variacao,
-  # confundimento com BeeSpecies e elegibilidade para modelo inferencial.
-  # A inclusao em PERMANOVA nao e automatica para evitar superajuste
-  # dado o n pequeno.
   # -------------------------------------------------------------------------
 
   cat("--- Nivel 3: covariaveis ---\n\n")
@@ -2103,9 +2072,7 @@ analisar_funil_invertido <- function(ps_obj,
   # -------------------------------------------------------------------------
   # 9.10 AUDITORIA DAS PREMISSAS DOS TESTES
   # -------------------------------------------------------------------------
-  # As curvas de rarefacao/iNEXT foram externalizadas para o script
-  # diagnostico_completude_amostral_inext.R. O Script 06 permanece responsavel
-  # apenas pela construcao e validacao dos objetos phyloseq.
+  
 
   premissas_testes <- auditar_premissas_testes(
     ps_obj = ps_obj,
