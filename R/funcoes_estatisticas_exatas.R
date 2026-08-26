@@ -1,10 +1,8 @@
 ###############################################################################
 # FUNCOES ESTATISTICAS EXATAS COMPARTILHADAS
-#
-#
-###############################################################################
+################################################################################
 
-FUNCOES_EXATAS_VERSAO <- "1.3.0"
+FUNCOES_EXATAS_VERSAO <- ""
 
 .numero_alocacoes_fixadas <- function(tamanhos) {
   tamanhos <- as.integer(tamanhos)
@@ -82,7 +80,6 @@ matriz_permutacoes_rotulos_unicos <- function(
     )
   }
 
-  # Validacao defensiva da matriz entregue a vegan/indicspecies.
   indice_esperado <- seq_len(n)
   linhas_validas <- apply(
     out, 1L,
@@ -166,9 +163,6 @@ resumo_permutacoes_rotulos <- function(matriz, conjunto, fator) {
   max(0, as.numeric(h_sem_correcao / correcao_empates))
 }
 
-# Teste exato por enumeracao completa para dois ou mais grupos. A estatistica e
-# o H de Kruskal-Wallis com a mesma correcao de empates do teste padrao. Para
-# dois grupos, equivale a um teste exato de permutacao baseado em postos.
 teste_postos_exato_grupos_fixos <- function(
     y,
     grupo,
@@ -328,9 +322,7 @@ teste_kw_exato_234 <- function(y, grupo) {
   )
 }
 
-# Comparacoes pareadas exatas apos um teste global. Cada par enumera todas as
-# realocacoes mantendo seus dois tamanhos. Ajuste multiplo deve ser feito fora
-# ou por esta funcao com p.adjust.method.
+# Comparacoes pareadas exatas apos um teste global. 
 posthoc_postos_exato_pares <- function(
     y,
     grupo,
@@ -539,4 +531,4 @@ permanova_exata_pares <- function(dist_obj, grupo, p.adjust.method = "holm",
   out
 }
 
-FUNCOES_EXATAS_VERSAO <- "1.3.0"
+FUNCOES_EXATAS_VERSAO <- ""
