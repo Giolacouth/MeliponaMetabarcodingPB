@@ -26,21 +26,6 @@ run_pipeline_script("10_graficos.R", "graficos", function(ctx) {
 ###############################################################################
 # SCRIPT 10 — VISUALIZAÇÕES COMPLETAS (SEM RECALCULO ESTATISTICO)
 #
-# Gráficos gerados:
-#   G01  Diversidade alfa        (jitter + medias + teste de postos exato)
-#   G02  PCoA PC1 × PC2          (spider + convex hull + PERMANOVA)
-#   G03  PCoA PC1 × PC3
-#   G04  NMDS                    (elipses 90% + stress)
-#   G05  Composição — Filo
-#   G06  Composição — Gênero (todos identificados)
-#   G07  Composição — Top 15 Gêneros
-#   G08  iNEXT (rarefação/extrapolação)
-#   G09  Whittaker (partição beta Sørensen)
-#   G10  Heatmap top 20 Gêneros
-#   G11  Diagrama de Venn (ASVs compartilhadas)
-#   G12  Volcano DESeq2 (3 comparações)
-#   G13  SIMPER top 10 ASVs por comparação
-#   G14  IndVal ASVs indicadoras (FDR-BH < 0.05)
 #
 # 
 ###############################################################################
@@ -195,9 +180,7 @@ CORES_ESP <- c(
 
 # Rótulos curtos para legendas e eixos
 LABELS_ESP <- c(
-  "Melipona fasciculata" = "M. fasciculata",
-  "Melipona scutellaris" = "M. scutellaris",
-  "Melipona subnitida"   = "M. subnitida"
+ 
 )
 
 CORES_STATUS <- c("Introduzida" = "#FF6361", "Nativa" = "#2f4b7c")
@@ -412,7 +395,7 @@ perm_label <- sprintf("PERMANOVA exata: F = %s | R² = %s | %s",
 cat(perm_label, "\n\n")
 
 # ── 5.2 Diversidade alfa ─────────────────────────────────────────────────────
-# Os indices sao calculados para desenho; os p-valores sao lidos do Script 08.
+
 MEDIDAS_ALFA <- c("Observed", "Chao1", "ACE", "Shannon", "Simpson", "InvSimpson")
 alfa_df <- suppressWarnings(estimate_richness(ps_c9, measures = MEDIDAS_ALFA))
 alfa_df$SampleID <- rownames(alfa_df)
@@ -446,8 +429,7 @@ asv_inext <- asv_inext[rowSums(asv_inext) > 0, , drop = FALSE]
 sample_ids_inext <- colnames(asv_inext)
 rotulos_inext <- rotulo_amostra(sample_ids_inext, meta_c9)
 
-# Paleta nomeada pelos SampleLabel usados pelo objeto iNEXT/ggiNEXT.
-# Os nomes garantem correspondência determinística entre curvas e amostras.
+
 if (anyNA(rotulos_inext) || any(!nzchar(rotulos_inext))) {
   stop(
     "SampleLabel ausente ou vazio para uma ou mais amostras do iNEXT.",
@@ -615,7 +597,7 @@ g01b_alpha_status <- ggplot() +
        x = NULL, y = "Valor do Índice")
 
 ###############################################################################
-# G02 / G03 — PCoA (PC1×PC2 e PC1×PC3)
+# G02 / G03 — PCoA 
 ###############################################################################
 
 cat("G02/G03 - PCoA...\n")
@@ -643,8 +625,7 @@ seg13 <- dplyr::left_join(pcoa_df, cen13, by = "BeeSpecies",
                            suffix = c("","_c")) |>
   dplyr::rename(x = PC1, y = PC3, xend = PC1_c, yend = PC3_c)
 
-# Polígonos convexos exigem >=3 pontos não colineares. Grupos com n=2
-# permanecem representados por pontos e spiders, sem polígono degenerado.
+
 calcular_hull_seguro <- function(df, x, y) {
   df |>
     dplyr::group_by(BeeSpecies) |>
