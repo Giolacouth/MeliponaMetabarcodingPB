@@ -119,9 +119,7 @@ arq_rdp   <- ctx$contracts[["taxa_rdp"]]
 arq_gg2   <- ctx$contracts[["taxa_gg2"]]
 arq_bee   <- ctx$contracts[["taxa_beexact"]]
 
-# GSR entra como UM unico banco votante usando a classificacao principal
-# confidence=disable, coerente com o Script 02e. O alias legado e aceito somente
-# quando o arquivo explicito nao estiver disponivel.
+  
 arq_gsr_disable_principal <- ctx$contracts[["taxa_gsr_disable"]]
 arq_gsr_disable_alias <- ctx$contracts[["taxa_gsr_disable_alias"]]
 arq_gsr_disable <- if (file.exists(arq_gsr_disable_principal)) {
@@ -390,9 +388,7 @@ if (gsr07_disponivel) {
   )
 }
 
-# Fixar a mesma ordem canonica em todas as matrizes antes da normalizacao.
-# Isso evita desalinhamento posicional de atributos auxiliares (por exemplo,
-# flags de Species composta) quando um banco entrega as mesmas ASVs em outra ordem.
+
 reordenar_universo <- function(mat, universo) {
   mat[universo, , drop = FALSE]
 }
@@ -450,10 +446,8 @@ if (nrow(meta_blast) != 1L) {
   )
 }
 
-# Compatibilidade controlada:
-# versões anteriores do Script 04 usavam Perc_ident_exact para a mesma camada.
-# O alias só corrige o nome do campo; os critérios biológicos continuam sendo
-# validados abaixo.
+
+
 if (
   !"Perc_ident_species" %in% colnames(meta_blast) &&
   "Perc_ident_exact" %in% colnames(meta_blast)
@@ -784,9 +778,7 @@ normalizar_filo <- function(x, harmonizar_sufixos_gtdb = FALSE) {
   y
 }
 
-# Reconstroi Species como binomio canonico. Quando o banco fornece uma
-# linhagem com informacao adicional de cepa, apenas o binomio e mantido.
-# Nomes "Candidatus Genus species" sao preservados como trinômio nomenclatural
+
 # (Candidatus + genero + epiteto), e nao tratados como classificacao vaga.
 normalizar_species_binomial <- function(
   mat,
@@ -927,7 +919,7 @@ mesmo_taxon <- function(a, b) {
   length(intersect(ra, rb)) > 0L
 }
 
-# Species exige o mesmo binomio canonico; compatibilidade apenas de Genus nao
+# Species exige o mesmo binomio; compatibilidade apenas de Genus nao
 # e suficiente para criar concordancia no nivel de especie.
 mesma_species_binomial <- function(a, b) {
   if (!valor_valido(a) || !valor_valido(b)) return(FALSE)
@@ -992,10 +984,8 @@ gsr07_norm <- normalizar_mat(
   harmonizar_sufixos_gtdb = TRUE
 )
 
-# O voto GSR corresponde integralmente a uma unica execucao do classificador:
-# confidence=disable, definida como principal no Script 02e. Nao e permitido
-# combinar 0.7 e disable em ranks diferentes da mesma ASV, pois isso criaria uma
-# linhagem hibrida que nao foi produzida por nenhum classificador.
+
+
 gsr_voto <- gsr_disable_norm
 gsr_fonte_voto <- matrix(
   NA_character_,
@@ -1473,9 +1463,6 @@ validar_decisoes_rank()
 # 9. CLASSIFICACAO DE SPECIES — BLAST EXATO COMO PRIORIDADE MAXIMA
 ###############################################################################
 
-# A matriz taxa_blast100.rds ja contem somente a camada exata produzida pelo
-# Script 04. Aqui o contrato e reforcado por ASV: Species e Genus devem ser
-# informativos, coerentes entre si e marcados como nao ambiguos.
 blast_species_exata <- setNames(
   blast100_norm[all_asvs, "Species_binomial"],
   all_asvs
