@@ -24,12 +24,7 @@ source(.bootstrap_files[[1L]], local = .GlobalEnv)
 rm(.file_args, .script_dir, .bootstrap_candidates, .bootstrap_files)
 run_pipeline_script("02e_GSRDB_V3V4_QIIME2.R", "gsr", function(ctx) {
 ###############################################################################
-# SCRIPT 2e — CLASSIFICACAO TAXONOMICA GSR-DB V3-V4 (QIIME 2)
-#
-# OBJETIVO
-#   Classificar o mesmo universo canonico de ASVs usado por SILVA, RDP,
-#   Greengenes2, BEExact e BLAST, utilizando o classificador pre-treinado
-#   GSR-DB V3-V4 distribuido como artefato QIIME 2 (.qza).
+# SCRIPT 2e — CLASSIFICACAO TAXONOMICA GSR-DB
 
 
 options(encoding = "UTF-8", stringsAsFactors = FALSE, warn = 1)
@@ -42,9 +37,9 @@ suppressPackageStartupMessages({
 # 0. PARAMETROS EDITAVEIS
 ###############################################################################
 
-VERSAO        <- "1.1.0_parser_misto_harmonizacao_centralizada"
+VERSAO        <- ""
 DATA_EXECUCAO <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-BANCO_NOME    <- "GSR_DB_V3V4"
+BANCO_NOME    <- ""
 
 base_path <- ctx$base_path
 pipeline_version <- ctx$version
@@ -86,8 +81,7 @@ N_JOBS <- 1L
 READ_ORIENTATION <- "auto"
 SOBRESCREVER <- TRUE
 
-# Opcional: nome do ambiente conda/mamba com QIIME 2. Deixe vazio quando
-# o comando 'qiime' ja estiver disponivel no PATH.
+
 QIIME2_ENV <- Sys.getenv("QIIME2_ENV", unset = "")
 
 RANKS <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
@@ -379,7 +373,7 @@ if (!identical(unname(as.character(fasta_check)), unname(seqs_canonicas))) {
 log_msg(sprintf("FASTA GSR criado com %d ASVs.", length(fasta_check)), "OK")
 
 ###############################################################################
-# 4. VALIDACAO DO ARTEFATO QIIME 2
+# 4. VALIDACAO DO QIIME 2
 ###############################################################################
 
 cat("=== VALIDACAO DO CLASSIFICADOR GSR ===\n\n")
@@ -603,9 +597,7 @@ parse_lineage_detalhado <- function(lineage) {
     ))
   }
 
-  # Fallback posicional para tokens sem prefixo.
-  # Em linhagens mistas, so e seguro quando os prefixos observados confirmam
-  # que a posicao dos segmentos segue Kingdom -> Species.
+ 
   idx_sem_prefixo <- which(tipo == "sem_prefixo")
   recuperadas <- 0L
   nao_recuperadas <- character()
@@ -746,9 +738,7 @@ eh_placeholder <- function(x) {
   )
 }
 
-# GSR agrupa taxonomias quando a mesma sequencia V3-V4 representa mais de um
-# taxon. O formato pode conter ':' ou nomes unidos por '-'. Esses valores sao
-# informativos, mas nao sao atribuicoes univocas.
+
 eh_composta <- function(x, rank) {
   if (is.na(x) || trimws(x) == "") return(FALSE)
   x <- trimws(x)
@@ -983,9 +973,7 @@ classificar_gsr <- function(confidence_value, sufixo) {
   idx_audit <- limpeza$comp_genus | limpeza$comp_species | limpeza$species_sem_genus
   n_audit <- sum(idx_audit)
 
-  # rep(..., n_audit) preserva um data.frame de zero linhas quando nao ha
-  # atribuicoes compostas. Um escalar de comprimento 1 causaria o erro
-  # "argumentos implicam em numero de linhas distintos: 0, 1".
+ 
   auditoria_composta <- data.frame(
     ASV_ID = map_ord$ASV_ID[idx_audit],
     ASV_seq = seqs_canonicas[idx_audit],
