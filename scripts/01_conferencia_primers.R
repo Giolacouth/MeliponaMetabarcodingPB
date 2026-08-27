@@ -23,11 +23,7 @@ if (!length(.bootstrap_files)) {
 source(.bootstrap_files[[1L]], local = .GlobalEnv)
 rm(.file_args, .script_dir, .bootstrap_candidates, .bootstrap_files)
 run_pipeline_script("00_conferencia_primers.R", "primers", function(ctx) {
-###############################################################################
-# 00_conferencia_primers.R
-#
 
-###############################################################################
 
 suppressPackageStartupMessages({
   library(ShortRead)
@@ -51,37 +47,18 @@ output_path <- ctx$stage$root
 FWD <- DNAString()       
 REV <- DNAString()   
 
-# Região inicial examinada para confirmar presença na extremidade 5'
+
 window_5p <- 40L
-
-# Busca tolerante na janela 5': exata, 1 mismatch e 2 mismatches
 mismatch_5p <- c(0L, 1L, 2L)
-
-# Em toda a read, a busca exata é suficiente para detectar ocorrências internas
 mismatch_whole_read <- 0L
-
-# Não permitir inserções/deleções durante a busca
 allow_indels <- FALSE
-
-# Por padrão, analisar todas as reads.
-# Um valor inteiro em max_reads limita a quantidade analisada.
 max_reads <- Inf
-
-# Quando max_reads for finito:
-#   "random" = seleção aleatória reprodutível dos mesmos pares R1/R2
-#   "first"  = primeiras reads
 sampling_method <- "random"
 random_seed <- 1234L
-
-# Limiares apenas para geração de alertas no relatório
 minimum_expected_primer_percent_raw <- 90
 maximum_residual_primer_percent_trimmed <- 1
 maximum_N_percent_5p <- 1
-
-# Geração de gráficos PNG
 generate_plots <- TRUE
-
-# Se TRUE, uma amostra sem correspondência no metadado é considerada erro.
 strict_metadata <- TRUE
 
 ###############################################################################
@@ -175,10 +152,10 @@ execution_start <- Sys.time()
 script_version <- "2.0.0"
 
 primers <- list(
-  `341F` = FWD,
-  `341F_RC` = reverseComplement(FWD),
-  `805R` = REV,
-  `805R_RC` = reverseComplement(REV)
+  `` = FWD,
+  `` = reverseComplement(FWD),
+  `` = REV,
+  `` = reverseComplement(REV)
 )
 
 expected_primer <- c(
@@ -509,8 +486,7 @@ rbind_or_empty <- function(items) {
 }
 
 write_tsv <- function(x, filename) {
-  # Revalida a pasta imediatamente antes de cada gravação. Isso também
-  # protege contra exclusão ou desmontagem acidental durante uma execução longa.
+  
   current_table_path <- ensure_directory(
     table_path,
     "diretório de tabelas"
@@ -1552,9 +1528,6 @@ html_lines <- c(
   "<h2>1. Escopo</h2>",
   sprintf(
     paste0(
-      "<p>Etapas analisadas: <strong>%s</strong>. ",
-      "A busca na extremidade 5' utilizou uma janela de %d nt, ",
-      "com 0, 1 e 2 mismatches; a busca em toda a read utilizou ",
       "correspondência exata. Inserções e deleções: %s.</p>"
     ),
     html_escape(stages_text),
@@ -1592,8 +1565,6 @@ html_lines <- c(
   ),
   paste0(
     "<p><code>PercentReadsWithPrimer</code> é calculado por arquivo e direção. ",
-    "O valor por par não pode ser obtido pela média dos percentuais de R1 e R2; ",
-    "por isso foi calculado diretamente com os pares correspondentes.</p>"
   ),
   paste0(
     "<p><code>ReadPairsRemovedBetweenStages</code> é a diferença de contagem ",
