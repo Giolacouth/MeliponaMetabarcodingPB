@@ -25,8 +25,6 @@ rm(.file_args, .script_dir, .bootstrap_candidates, .bootstrap_files)
 run_pipeline_script("01a_dada2_multirun.R", "dada2", function(ctx) {
 ###############################################################################
 # SCRIPT 01 — PIPELINE DADA2 (MULTI-RUN)
-#
-
 ###############################################################################
 
 options(encoding = "UTF-8")
@@ -36,7 +34,7 @@ tryCatch(
   error   = function(e) message("Locale pt_BR.UTF-8 indisponivel; seguindo com locale atual.")
 )
 
-# Semente compartilhada para reprodutibilidade entre as etapas estocasticas.
+
 
 SEED_GLOBAL <- 1234L
 set.seed(SEED_GLOBAL)
@@ -74,7 +72,7 @@ truncQ_par <-
 minLen_par <-
 
 nbases_par <- Inf
-# Política explícita por corrida: pooling apenas na corrida principal.
+
 pool_by_run <- c("run_main" = TRUE, "run_aux" = FALSE)
 pool_fallback <- "pseudo"
 
@@ -136,9 +134,6 @@ if (!nzchar(cutadapt) || !file.exists(cutadapt)) {
 
 ###############################################################################
 # 4. METADADOS
-# Apenas carregamento e validacao estrutural.
-# Identificacao das corridas (run_principal/auxiliar) e feita na Secao 6,
-# apos o cruzamento com os FASTQs disponiveis.
 ###############################################################################
 cat("\n=== IMPORTANDO METADADOS ===\n")
 metadata_path <- file.path(raw_path, "metadados.tsv")
@@ -149,8 +144,7 @@ metadata <- read.table(metadata_path, sep = "\t", header = TRUE,
                        stringsAsFactors = FALSE, check.names = FALSE,
                        na.strings = c("", "NA", "NaN"))
 
-# Validacao das colunas obrigatorias ANTES de qualquer operacao sobre elas
-# Aceita SampleLabels como alias legado, mas padroniza para SampleLabel.
+
 if (!"SampleLabel" %in% colnames(metadata) && "SampleLabels" %in% colnames(metadata)) {
   colnames(metadata)[colnames(metadata) == "SampleLabels"] <- "SampleLabel"
 }
@@ -343,9 +337,6 @@ if (any(reads_raw_R1 != reads_raw_R2))
 
 ###############################################################################
 # 6. CRUZAMENTO FASTQ x METADADOS
-# Identificacao das corridas feita aqui, sobre o metadata JA CRUZADO com os
-# FASTQs disponiveis — evita resultado diferente se metadata tem amostras
-# sem FASTQ correspondente.
 ###############################################################################
 cat("\n=== CRUZAMENTO FASTQ x METADADOS ===\n")
 missing_metadata <- setdiff(sample_names, metadata$SampleID)
@@ -363,8 +354,7 @@ cat("Mapa amostra -> corrida:\n"); print(run_of_sample)
 write.table(metadata, file.path(output_path, "metadata_final.tsv"),
             sep = "\t", row.names = FALSE, quote = FALSE)
 
-# Identificacao das corridas — feita UMA UNICA VEZ, aqui
-# metadata ja esta cruzado com os FASTQs disponíveis
+
 run_n_amostras <- table(metadata$Run)
 if (length(run_n_amostras) != 2L) {
   stop("Este pipeline espera exatamente 2 corridas. Encontrado: ",
@@ -657,14 +647,10 @@ dada_with_fallback <- function(derep, err, pool_primary, pool_fb, label) {
 
 ###############################################################################
 # 11. PROCESSAMENTO POR CORRIDA
-# Ordem: corrida principal primeiro; corrida auxiliar aprende modelo proprio.
-# O modelo principal e transferido para a auxiliar somente na analise de sensibilidade.
 ###############################################################################
 seqtab_list <- list(); track_list  <- list()
 filter_list <- list(); merge_list  <- list(); pool_used <- list()
 
-# Modelos de erro da corrida principal — inicializados como NULL;
-# a corrida auxiliar falha explicitamente se o principal nao foi processado
 errF_principal <- NULL
 errR_principal <- NULL
 
@@ -760,13 +746,7 @@ for (r in runs_ordenados) {
 
   } else {
 
-    # Corrida auxiliar: aprende o proprio modelo de erros (learnErrors).
-    # Justificativa (Prodan 2020; Callahan 2016): o DADA2 estima o erro por
-    # corrida, pois corridas distintas podem ter perfis de erro distintos. O
-    # learnErrors utiliza as reads disponíveis, mas uma unica amostra reduz a
-    # diversidade de perfis de qualidade representados. O ajuste e tecnicamente
-    # executavel, nao automaticamente estavel; por isso deve ser inspecionado e
-    # comparado ao modelo transferido da corrida principal.
+   
 
     cat(sprintf(
       "Corrida %s (%d amostra): learnErrors PROPRIO (nbases=Inf).\n", r, length(sn_r)))
@@ -1153,11 +1133,6 @@ if (aux_vazia) {
 
 ###############################################################################
 # 14B. PROFUNDIDADE POR AMOSTRA (pos-quimera, pre-filtro)
-#
-# Usa seqtab.nochim:
-#   - depois da remocao de quimeras;
-#   - antes dos filtros de abundancia e prevalencia;
-#   - inclui as 10 amostras das duas corridas.
 ###############################################################################
 
 cat("\n=== PROFUNDIDADE POR AMOSTRA (pos-quimera, pre-filtro) ===\n")
@@ -1398,8 +1373,7 @@ cat(
 )
 ###############################################################################
 # 14C. ANALISE DE SENSIBILIDADE DOS FILTROS
-# Executada sobre seqtab_main_nochim (9 amostras) — os limiares sao
-# selecionados para a analise primaria. min_prev avaliado dentro do n=9.
+
 ###############################################################################
 cat("\n=== SENSIBILIDADE DOS FILTROS (corrida principal, n=9) ===\n")
 evaluate_threshold <- function(seqtab, min_reads, min_prev) {
@@ -2053,7 +2027,6 @@ rm(
 gc()
 ###############################################################################
 # 16. RASTREAMENTO GLOBAL DE READS
-# "final" = reads na saida filtrada de cada amostra (main ou aux)
 ###############################################################################
 cat("\n=== RASTREAMENTO DE READS ===\n")
 
@@ -2118,22 +2091,6 @@ cat("\n[Sem controle negativo] Lista de contaminantes exportada.\n")
 
 ###############################################################################
 # 18. DICIONARIO GLOBAL DE IDs, FASTA UNIFICADO E TABELAS
-#
-# DESIGN:
-#   O universo de ASVs e particionado em tres subconjuntos:
-#     (a) principal          : colnames(seqtab_main_nochim)  → IDs ASV_1…N
-#     (b) compartilhadas     : intersecao entre principal e auxiliar
-#     (c) exclusivas_aux     : colnames(seqtab_aux_nochim) \ principal → IDs ASV_AUX_1…M
-#
-#   O FASTA global (ASVs.fa) contem (a) + (c), garantindo que o Script 4
-#   (rBLAST) processe a totalidade das sequencias de ambas as corridas.
-#   O prefixo ASV_AUX_ distingue as exclusivas da auxiliar sem alterar os
-#   IDs ASV_N da corrida principal. Os scripts a jusante preservam a unidade ASV.
-#
-#   Scripts 2a-2e e 4: operam sobre seqtab_global_nochim.rds (main + aux),
-#   classificando TODAS as ASVs em uma unica passagem. O particionamento por
-#   origem (principal vs. auxiliar_exclusiva) e preservado em ASV_sequences.tsv
-#   e pode ser auditado por todos os scripts a jusante.
 ###############################################################################
 cat("\n=== DICIONARIO GLOBAL DE IDs, FASTA E TABELAS ===\n")
 
@@ -2237,13 +2194,6 @@ if (nrow(seqtab_aux_nochim_ids) > 0) {
               nrow(asv_long_aux)))
 }
 
-# --------------------------------------------------------------------------
-# seqtab_global_nochim: merge pos-filtro de main + aux
-# Uso: entrada canonica dos Scripts 2a-2e e 4.
-# Classifica TODAS as ASVs (main + exclusivas_aux) em uma unica passagem.
-# O particionamento por origem e feito no Script 7 via ASV_sequences.tsv.
-# --------------------------------------------------------------------------
-# A junção global é obrigatória: 9 amostras principais + 1 auxiliar.
 if (isTRUE(aux_vazia) || nrow(seqtab_aux_nochim) != 1L ||
     ncol(seqtab_aux_nochim) == 0L) {
   stop(
